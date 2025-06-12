@@ -1,0 +1,143 @@
+/*A propos*/
+
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    text-decoration: none;
+}
+.about{
+    
+    padding: 70px 15px;
+    display: flex;
+    margin: 150px 0;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+
+}
+
+.left{
+    max-width: 700px;
+    
+}
+
+.right{
+    max-width: 500px;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    
+
+    
+}
+
+p{
+    font-family: papyrus;
+    font-size: 30px;
+}
+
+.icon{
+    
+    height: 200px;
+    width: 200px;
+    border-radius: 100px;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    margin: 0px 15px;   
+    background: rgb(248, 48, 185);
+    border-radius: 100%;
+    box-shadow: inset 7px 7px 14px rgb(193, 13, 130),
+            inset -7px -7px 14px rgb(239, 137, 200);
+    transition:0.2s;
+}
+
+.left h3{
+    font-size: 50px;
+    color: #89055f;
+    margin-bottom: 25px;
+    
+}
+
+.icon:hover{
+    border-radius: 133px;
+    background:rgb(248, 48, 208);
+    box-shadow:  7px 7px 14px rgb(193, 13, 166),
+             -7px -7px 14px rgb(239, 137, 213);
+    cursor: pointer;
+}
+
+
+
+.pro i{
+    font-size: 50px;
+    color: aliceblue;
+   margin-bottom: 5px;
+}
+
+.pro .h4 {
+    font-size: 30px;
+    color: aliceblue;
+    font-family: papyrus;
+}
+
+.pro{
+    margin: 60px;
+}
+
+/* Media Queries pour très petits écrans */
+@media (max-width: 480px) {
+
+
+p{
+    font-family: papyrus;
+    font-size: 19px;
+}
+
+.icon{
+    
+    height: 170px;
+    width: 170px;
+    border-radius: 100px;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    margin: 0px 10px;   
+    background: rgb(248, 48, 185);
+    border-radius: 100%;
+    box-shadow: inset 7px 7px 14px rgb(193, 13, 130),
+            inset -7px -7px 14px rgb(239, 137, 200);
+    transition:0.2s;
+}
+
+.left h3{
+    font-size: 30px;
+    color: #89055f;
+    margin-bottom: 25px;
+    
+}
+
+.icon:hover{
+    border-radius: 133px;
+    background:rgb(248, 48, 208);
+    box-shadow:  7px 7px 14px rgb(193, 13, 166),
+             -7px -7px 14px rgb(239, 137, 213);
+    cursor: pointer;
+}
+
+
+
+.pro i{
+    font-size: 30px;
+    color: aliceblue;
+  
+}
+
+.pro .h4 {
+    font-size: 20px;
+    color: aliceblue;
+    font-family: papyrus;
+}
+
+}

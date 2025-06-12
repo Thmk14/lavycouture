@@ -1,0 +1,197 @@
+/* Réinitialisation de base */
+* {
+    
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Poppins", sans-serif;
+}
+
+/* SECTION CONTACT */
+.contact {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    justify-content: center;
+    align-items: center;
+    background: rgb(245, 195, 229);
+    text-align: center;
+}
+
+/* Contenu */
+.contact .content {
+    margin-bottom: 100px;
+}
+
+
+
+/* Conteneur principal */
+.contain {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+    max-width: 1200px;
+    gap: 20px;
+}
+
+/* Informations de contact */
+.contactinfo {
+    width: 100%;
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Boîte d'information */
+.contactinfo .box {
+    display: flex;
+    align-items: center;
+    padding: 20px 50px;
+    margin-bottom: 10px;
+    width: 100%;
+    max-width: 400px;
+    
+}
+
+.contactinfo .box .inc {
+    width: 50px;
+    height: 50px;
+    background: #faf4f8;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 22px;
+    border-radius: 50%;
+    margin-right: 15px;
+}
+
+.contactinfo .box .text h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #d21cc0;
+}
+
+.contactinfo .box .text p {
+    font-size: 14px;
+    color: #3f012c;
+}
+
+/* FORMULAIRE */
+.container {
+    width: 100%;
+    max-width: 500px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.container form {
+    width: 100%;
+    padding: 20px;
+    background: #fdccf0;
+    border-radius: 10px;
+    box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+
+/* Champs du formulaire */
+.container form h1 {
+    color: rgb(19, 2, 16);
+    font-size: 24px;
+    margin-bottom: 15px;
+}
+
+.container form input,
+.container form textarea {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 10px;
+    border: none;
+    border-radius: 5px;
+    background: #ffffff;
+    font-size: 16px;
+    color: #333333;
+    border-bottom: 2px solid rgb(234, 27, 220);
+}
+
+.container form input::placeholder,
+.container form textarea::placeholder {
+    color: #831b64;
+}
+
+.container form h4 {
+    font-size: 16px;
+    margin: 15px 0 5px;
+    color: rgb(8, 0, 6);
+    font-weight: 500;
+}
+
+/* Bouton envoyer */
+.container form #button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    background: rgb(230, 32, 184);
+    border-radius: 5px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.container form #button:hover {
+    background: rgb(186, 24, 162);
+}
+
+
+/* RESPONSIVE DESIGN */
+@media (max-width: 768px) {
+    .contain {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .contactinfo {
+        width: 100%;
+        align-items: center;
+    }
+
+    .container {
+        width: 100%;
+        max-width: 400px;
+    }
+
+    .container form {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .contact {
+        padding: 30px 10px;
+    }
+
+   
+
+    .contactinfo .box {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .contactinfo .box .inc {
+        margin-bottom: 10px;
+    }
+}
+
+
+
+.message-box p {
+    font-size: 16px;
+    font-weight: bold;
+    padding: 10px;
+    border-radius: 5px;
+}

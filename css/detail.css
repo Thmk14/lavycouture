@@ -1,0 +1,310 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    background-color: #fdfdfd;
+    color: #333;
+}
+
+.flex-box {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 200px 20px;
+    gap: 40px;
+}
+
+.left, .right {
+    flex: 1 1 400px;
+    max-width: 600px;
+}
+
+.big-img {
+    
+    display: flex;
+    justify-content: center;
+}
+
+.big-img img {
+    width: 100%;
+    max-width: 400px;
+    height: auto;
+    border-radius: 12px;
+    object-fit: cover;
+}
+
+.right h1 {
+    font-size: 32px;
+    color: #930173;
+}
+
+.titl {
+    font-size: 16px;
+    margin: 10px 0;
+    color: #444;
+    line-height: 1.6;
+    overflow-wrap: break-word;
+}
+
+.price {
+    font-size: 24px;
+    font-weight: bold;
+    color: #d60594;
+    margin: 15px 0;
+}
+
+/* Formulaire */
+form label {
+    display: block;
+    margin: 15px 0 5px;
+    font-weight: 600;
+    color: #000;
+}
+
+form input[type="text"],
+form input[type="number"],
+form select {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+form input[type="file"] {
+    padding: 8px 0;
+}
+
+.quantity-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    max-width: 150px;
+    margin: 0 auto;
+    border-radius: 6px;
+}
+
+.quantity-container button {
+    padding: 8px 16px;
+    background-color: #a72881;
+    color: white;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+.quantity-container input {
+    width: 60px;
+    text-align: center;
+    font-size: 16px;
+    border: none;
+    margin: 0 8px;
+}
+
+.quantity-container button:hover {
+    background-color: #821c65;
+}
+
+.btn-secondary {
+    display: inline-block;
+    text-align: center;
+    margin: 10px 0;
+    background-color: #d60594;
+    padding: 10px 20px;
+    color: white;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.btn-secondary:hover {
+    background-color: #be057e;
+}
+
+.btn-box {
+    margin-top: 30px;
+    display: flex;
+    justify-content: center;
+}
+
+.cart-btn {
+    background-color: #d60594;
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    font-size: 18px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.cart-btn:hover {
+    background-color: #be057e;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .flex-box {
+        flex-direction: column;
+        align-items: center;
+        margin-top: 120px;
+    }
+
+    .btn-box {
+        flex-direction: column;
+    }
+
+    .btn-box input,
+    .btn-secondary {
+        width: 100%;
+        margin: 10px 0;
+    }
+}
+
+
+/* Main Personalization Checkbox and Label */
+ label[for="enable_personnalisation"] {
+    display: flex;
+    align-items: center;
+    font-size: 1.25em; /* Larger font size for prominence */
+    color: #333333;
+    cursor: pointer;
+    margin-bottom: 25px; /* More space below */
+    font-weight: 600; /* Slightly bolder */
+    user-select: none; /* Prevent text selection on click */
+}
+
+ input[type="checkbox"]#enable_personnalisation {
+    appearance: none; /* Hide default checkbox */
+    -webkit-appearance: none;
+    width: 24px; /* Custom checkbox size */
+    height: 24px;
+    border: 2px solid #ff69b4; /* Hot pink border */
+    border-radius: 6px; /* Slightly rounded custom checkbox */
+    margin-right: 15px; /* More space */
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+ input[type="checkbox"]#enable_personnalisation:checked {
+    background-color: #ff69b4; /* Hot pink when checked */
+    border-color: #ff69b4;
+}
+
+ input[type="checkbox"]#enable_personnalisation:checked::after {
+    content: '\2713'; /* Checkmark symbol */
+    font-size: 16px;
+    color: white;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+} 
+
+/* Section for Personalization Fields */
+#personnalisation_fields {
+    border-top: 1px dashed #e0e0e0; /* Dashed line for a softer separation */
+    padding-top: 25px; /* More padding */
+    margin-top: 25px; /* More margin */
+}
+
+/* General Label Styling for Sub-sections */
+#personnalisation_fields label:not(:has(input[type="checkbox"])) {
+    display: block;
+    margin-bottom: 12px; /* Increased spacing */
+    color: #555555;
+    font-weight: 600; /* Bolder for section labels */
+    font-size: 1.05em;
+}
+
+/* Textarea Styling */
+#personnalisation_fields textarea {
+    width: calc(100% - 24px); /* Adjusted width */
+    padding: 12px; /* More padding */
+    margin-bottom: 20px; /* Increased spacing */
+    border: 1px solid #dddddd; /* Lighter border */
+    border-radius: 6px; /* Softer corners */
+    font-size: 1em;
+    color: #444444;
+    resize: vertical;
+    min-height: 100px; /* Taller default height */
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05); /* Subtle inner shadow */
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+#personnalisation_fields textarea:focus {
+    border-color: #ff99cc; /* Lighter pink on focus */
+    box-shadow: 0 0 0 3px rgba(255, 105, 180, 0.2); /* Soft hot pink glow on focus */
+    outline: none; /* Remove default outline */
+}
+
+
+
+
+/* File Input Styling */
+#personnalisation_fields input[type="file"] {
+    display: block;
+    margin-top: 15px; /* More space above */
+    margin-bottom: 30px; /* More space below */
+    padding: 15px; /* Increased padding */
+    border: 2px dashed #ffb3e6; /* **Softer dashed pink border** */
+    border-radius: 10px; /* More rounded */
+    background-color: #fff0f5; /* **Blush pink background, very soft** */
+    color: #555;
+    width: calc(100% - 34px); /* Adjusted width for padding/border */
+    box-sizing: border-box;
+    font-size: 1em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center; /* Center placeholder text */
+    position: relative; /* For icon placement */
+}
+
+#personnalisation_fields input[type="file"]:hover {
+    background-color: #ffdbf0; /* Slightly darker blush on hover */
+    border-color: #ff85d6; /* More vibrant pink on hover */
+    box-shadow: 0 4px 15px rgba(255, 105, 180, 0.2); /* Enhanced glow on hover */
+}
+
+/* Optional: Style for the "Choose File" button itself (varies by browser) */
+#personnalisation_fields input[type="file"]::-webkit-file-upload-button {
+    background-color: #ff69b4; /* Hot pink button */
+    color: white;
+    padding: 10px 20px; /* Larger button */
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-right: 20px; /* More space */
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    font-weight: 600;
+}
+
+#personnalisation_fields input[type="file"]::-webkit-file-upload-button:hover {
+    background-color: #e60073; /* Darker hot pink on hover */
+    transform: translateY(-2px); /* Slight lift effect */
+}
+
+#personnalisation_fields input[type="file"]::file-selector-button { /* For Firefox */
+    background-color: #ff69b4;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-right: 20px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    font-weight: 600;
+}
+
+#personnalisation_fields input[type="file"]::file-selector-button:hover {
+    background-color: #e60073;
+    transform: translateY(-2px);
+}
+

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prise de photo</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            background-color: #f0f0f0;
+        }
+
+        #video {
+            width: auto;
+            height: 80vh;
+            border: 2px solid #ddd;
+        }
+
+        #canvas {
+            width: auto;
+            height: 80vh;
+            display: none;
+        }
+
+        .controller {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        #capturedImage {
+            display: none;
+            margin-top: 20px;
+            width: auto;
+            max-height: 80vh;
+            border: 2px solid #ddd;
+        }
+
+        #reTakeBtn {
+            display: none;
+        }
+
+        #instructionMessage {
+            position: absolute;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 18px;
+            color: white;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        #countdown {
+            font-size: 48px;
+            color: red;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: bold;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="video-wrap">
+        <video id="video" playsinline autoplay></video>
+        <div id="instructionMessage">Veuillez vous placer de manière à ce que votre corps soit visible de la tête aux pieds, avec les bras et les jambes légèrement écartés.</div>
+        <div id="countdown"></div>
+    </div>
+    <div class="controller">
+        <button id="snap">Capture</button>
+        <button id="reTakeBtn">Refaire la photo</button>
+    </div>
+    <canvas id="canvas" width="1280" height="720"></canvas>
+    <img id="capturedImage" src="" alt="Captured Image" />
+
+    <div class="map-container rounded-lg shadow overflow-hidden">
+        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3972.213369604695!2d-3.995510525859709!3d5.384412194594557!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xfc19500410b406b%3A0x9d93687280782bb!2sCGV%20MOTORS!5e0!3m2!1sfr!2sci!4v1745442207131!5m2!1sfr!2sci" 
+                width="100%" height="400" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+    </div>
+
+    <script>
+        'use strict';
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const snap = document.getElementById('snap');
+        const reTakeBtn = document.getElementById('reTakeBtn');
+        const capturedImage = document.getElementById('capturedImage');
+        const instructionMessage = document.getElementById('instructionMessage');
+        const countdown = document.getElementById('countdown');
+
+        const constraints = {
+            video: { width: 1280, height: 720 }
+        };
+
+        let stream = null;
+        let countdownTimer = null;
+
+        async function init() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia(constraints);
+                video.srcObject = stream;
+                video.style.display = 'block'; // Réafficher la vidéo
+            } catch (e) {
+                console.error('Erreur caméra :', e.toString());
+            }
+        }
+
+        init();
+
+        const context = canvas.getContext('2d');
+
+        snap.addEventListener("click", function() {
+            snap.disabled = true;
+            instructionMessage.style.display = 'block';
+            countdown.style.display = 'block';
+
+            let counter = 10;
+            countdown.innerText = counter;
+
+            countdownTimer = setInterval(function() {
+                counter--;
+                countdown.innerText = counter;
+                if (counter <= 0) {
+                    clearInterval(countdownTimer);
+                    takeSnapshot();
+                }
+            }, 1000);
+        });
+
+        function takeSnapshot() {
+            context.drawImage(video, 0, 0, 1280, 720);
+            const dataUrl = canvas.toDataURL('image/png');
+            capturedImage.src = dataUrl;
+            video.style.display = 'none';
+            capturedImage.style.display = 'block';
+            countdown.style.display = 'none';
+            instructionMessage.style.display = 'none';
+            snap.style.display = 'none';
+            reTakeBtn.style.display = 'block';
+            stopVideo();
+        }
+
+        reTakeBtn.addEventListener("click", function() {
+            snap.disabled = false;
+            snap.style.display = 'block';
+            reTakeBtn.style.display = 'none';
+            capturedImage.style.display = 'none';
+            countdown.style.display = 'none';
+            instructionMessage.style.display = 'none';
+
+            init();
+        });
+
+        function stopVideo() {
+            if (stream) {
+                let tracks = stream.getTracks();
+                tracks.forEach(track => track.stop());
+            }
+        }
+    </script>
+</body>
+</html>

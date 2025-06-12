@@ -1,0 +1,154 @@
+@import url('https://fonts.googleapis.com/css?family=Roboto:300,400,400i,500');
+
+* {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+}
+
+/* Section Catalogue */
+.catalogue {
+  padding: 150px 5%;
+  text-align: center;
+}
+
+.h1 {
+  font-size: 50px;
+  margin: 50px 0;
+}
+
+.dame {
+  background-color: #f5b8eb8c;
+  padding: 50px 0;
+  margin-bottom: 30px;
+}
+
+.h2 {
+  font-size: 40px;
+  margin-bottom: 30px;
+}
+
+.products {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+}
+
+.card {
+  width: 320px;
+  background: white;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  overflow: hidden;
+  text-align: center;
+  padding: 30px;
+  margin: 20px;
+}
+
+.card img {
+  width: 70%;
+  height: 250px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.card .desc {
+  font-size: 20px;
+  font-family: fantasy;
+  color: #424144;
+  margin-top: 10px;
+}
+
+.card .title {
+  font-size: 18px;
+  margin-top: 10px;
+  color: #333;
+  font-weight: 500;
+}
+
+.titl {
+  color: #ff41c3;
+  font-size: 14px;
+  line-height: 1.4;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+  max-height: 4.2em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 5px;
+}
+
+.price {
+  color: #9e0673;
+  font-size: 20px;
+  font-weight: bold;
+  margin-top: 15px;
+}
+
+.button3 {
+  width: 160px;
+  height: 40px;
+  padding: 5px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  background-color: rgb(201, 15, 152);
+  margin-top: 15px;
+  color: white;
+  font-size: 15px;
+}
+
+/* Responsive */
+@media (max-width: 1028px) {
+  .h1 {
+    font-size: 36px;
+    margin: 100px 0;
+  }
+
+  .card {
+    width: 70%;
+    height: auto;
+    padding: 20px;
+  }
+
+  .card img {
+    width: 40%;
+    height: 300px;
+  }
+
+  .button3 {
+    width: 100%;
+  }
+}
+
+
+@media (max-width: 588px) {
+    .h1 {
+      font-size: 36px;
+      margin: 100px 0;
+    }
+  
+    .card {
+      width: 70%;
+      height: auto;
+      padding: 20px;
+    }
+  
+    .card img {
+      width: 80%;
+      height: 300px;
+    }
+  
+    .button3 {
+      width: 100%;
+    }
+  }

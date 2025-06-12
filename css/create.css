@@ -1,0 +1,104 @@
+/* Style général */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #fbd9ef; /* plus doux */
+    margin: 0;
+    padding: 0;
+}
+
+/* Section principale */
+section {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 120px 20px 50px 20px;
+}
+
+/* Conteneur principal */
+.div {
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Titre */
+h1 {
+    color: #a72872;
+    margin: 20px 0;
+    font-size: 2.8em;
+}
+
+/* Champs de formulaire */
+textarea,
+select,
+input[type="color"] {
+    width: 100%;
+    margin: 10px 0 20px;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #ffe8f4;
+    font-size: 15px;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Zone de dessin */
+.drawing-area {
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    margin-top: 10px;
+    width: 100%;
+    height: 300px; /* Exemple de hauteur */
+    background-color: #fff;
+}
+
+/* Boutons */
+.buttons {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+button {
+    flex: 1;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    color: #fff;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+/* Bouton principal */
+.submit {
+    background-color: #a72872;
+}
+
+.submit:hover {
+    background-color: #882162;
+    transform: translateY(-2px);
+}
+
+/* Responsive Design */
+
+/* Tablettes */
+@media (max-width: 768px) {
+    section {
+        padding: 150px 20px 40px;
+    }
+
+    h1 {
+        font-size: 2.4em;
+    }
+
+    button {
+        font-size: 15px;
+    }
+}
+
