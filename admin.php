@@ -4,7 +4,7 @@ session_start();
 require 'config.php';
 
 if (!isset($_SESSION['id_personnel'])) {
-  header('Location: personnelog.php');
+  header('Location: perso nnelog.php');
   exit();
 }
 ?>
