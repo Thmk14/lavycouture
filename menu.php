@@ -6,7 +6,7 @@ if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
-$isLoggedIn = isset($_SESSION['id_client']);
+$isLoggedIn = isset($_SESSION['id']);
 
 /*function hasDeliveredOrders($pdo, $id_client) {
     $stmt = $pdo->prepare("SELECT COUNT(*) 

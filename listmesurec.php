@@ -7,7 +7,8 @@ if (isset($_GET['id_lca']) && is_numeric($_GET['id_lca'])) {
     $id_lca = (int) $_GET['id_lca'];
 
     // Récupérer la mensuration liée à l'article commandé
-    $sql = "SELECT m.*
+    $sql = "SELECT m.tour_taille, m.tour_poitrine, m.tour_hanche, m.taille_buste, m.longueur_bras, m.tour_bras,
+                m.longueur_jambe, m.tour_cuisse, m.tour_cou, m.largeur_epaule, m.longueur_entrejambe, m.longueur_total
             FROM mensuration m
             INNER JOIN lien_commande_article lca ON m.id_mensuration = lca.id_mensuration
             WHERE lca.id_lca = ?";
@@ -115,7 +116,7 @@ if (isset($_GET['id_lca']) && is_numeric($_GET['id_lca'])) {
 <div class="container">
     <h1>Mesures du Client</h1>
 
-    <?php if ($mesure==null): ?>
+    <?php if (!$mesure): ?>
         <p style="text-align:center; font-size:20px; color:gray;">Aucune mesure enregistrée pour ce client.</p>
     
         

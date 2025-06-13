@@ -8,18 +8,6 @@ require 'config.php';
 
 
 
-$total = 0;
-
-if (isset($_SESSION['id_client'])) {
-    $id_client = $_SESSION['id_client'];
-
-   
-    // Récupération des articles du panier
-  $sql = "SELECT * FROM lien_commande_article WHERE id_client = ?";
-$stmt = $pdo->prepare($sql);
-$stmt->execute([$id_client]); // ou [0 => $id_client]
-
-}
 ?>
 
 
@@ -243,7 +231,7 @@ $stmt->execute([$id_client]); // ou [0 => $id_client]
 
 
 
-<?php if (empty($articles)): ?>
+<?php if (!$_SESSION['id']): ?>
     <p style="text-align:center; color:#a72872; font-weight:bold;">Votre panier est vide.</p>
 <?php else: ?>
 <table>
@@ -264,9 +252,8 @@ $stmt->execute([$id_client]); // ou [0 => $id_client]
     </thead>
     <tbody>
         <?php
-        $id_client = $_SESSION['id_client'];
-        $query = "SELECT lca.id_lca, art.nom_modele, art.prix, art.image, lca.quantite,lca.id_mensuration, lca.supplement_prix,
-                         lca.description, m.taille_standard,lca.id_client
+        $id_client = $_SESSION['id'];
+        $query = "SELECT *
                   FROM lien_commande_article lca
                   JOIN article art ON lca.id_article = art.id_article
                  JOIN mensuration m ON lca.id_mensuration= m.id_mensuration
@@ -276,23 +263,25 @@ $stmt->execute([$id_client]); // ou [0 => $id_client]
         $stmt = $pdo->prepare($query);
         $stmt->execute([$id_client]);
         $result = $stmt->fetchAll();
+          $total = 0;
 
         foreach ($result as $row) {
+            
             $total = $row['prix'] * $row['quantite'];
             echo "<tr>";
             echo "<td><img src='images/{$row['image']}' style='height: 80px;'></td>";
             echo "<td>{$row['nom_modele']}</td>";
             echo "<td>{$row['prix']} FCFA</td>";
             echo "<td>{$row['quantite']}</td>";
-             echo "<td>{$row['taille_standard']}</td>";
+            echo "<td>" . (!empty($row['taille_standard']) ? $row['taille_standard'] : "Aucune") . "</td>";
             echo "<td>" . (!empty($row['supplement_prix']) ? $row['supplement_prix'] : "Aucun") . "</td>";
 
            
 
             // Personnalisation
-            echo "<td>" . (!empty($row['description']) ? $row['description'] : "Aucune") . "</td>";
+            echo "<td>" . (!empty($row['description_modele']) ? $row['description_modele'] : "Aucune") . "</td>";
 
-            echo "<td>" . (!empty($row['tissu']) ? $row['tissu'] : "Aucun") . "</td>";
+            echo "<td><img src='images/{".(!empty($row['tissu']) ? $row['tissu'] : "Aucun")." }' style='height: 80px;'> </td>";
 
         echo '<td><a href="listmesurec.php?id_lca=' . $row['id_lca'] . '" class="btn-mesures">Mensuration</a></td>';
   
@@ -311,7 +300,7 @@ $stmt->execute([$id_client]); // ou [0 => $id_client]
 <h3>Total général : <span id="total-general"><?= $total ?> FCFA</span></h3>
 <?php endif; ?>
 
-<?php if (!empty($articles)): ?>
+<?php if (!empty($result)): ?>
     <a href="catalogue.php" class="btn" >Continuer les achats </a>
     <a href="commande.php" class="btn" >Commander</a>
 <?php else: ?>

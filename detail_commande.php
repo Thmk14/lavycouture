@@ -7,7 +7,7 @@ if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
-$id_client = $_SESSION['id_client'] ?? null;
+$id_client = $_SESSION['id'] ?? null;
 
 if (!$id_client) {
     die("Erreur : ID client non défini.");
@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_commande_id'])
             $pdo->beginTransaction();
 
             // Supprimer les articles liés à la commande
-            $stmt = $pdo->prepare("DELETE FROM commande_article WHERE id_commande = ?");
+            $stmt = $pdo->prepare("DELETE FROM commande WHERE id_commande = ?");
             $stmt->execute([$commande_id]);
 
             // Supprimer la livraison liée si elle existe
@@ -59,15 +59,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_commande_id'])
 }
 
 // Récupération des données du client et des commandes
-$sql = " SELECT DISTINCT c.nom, c.prenom, c.email, c.telephone, c.lieu_habitation,
-        cmd.mode_paiement, cmd.statut_commande, cmd.id_commande, cmd.date_commande, 
-        p.*, liv.statut_livraison, liv.date_livraison,
-        v.image AS image, v.nom_modele AS nom_modele, v.prix AS prix
+$sql = " SELECT DISTINCT c.nom, c.prenom, c.email, c.telephone,c.ville, c.pays, c.lieu_habitation,
+        cmd.mode_paiement, cmd.statut_commande, cmd.id_commande, cmd.date_commande,cmd.montant_total, 
+        lca.*, liv.statut_livraison, liv.date_livraison,
+        art.image AS image, art.nom_modele AS nom_modele, v.prix AS prix
     FROM commande cmd   
     JOIN client c ON cmd.id_client = c.id_client
-    LEFT JOIN panier p ON p.id_client = c.id_client  
-    LEFT JOIN vetement v ON v.id_vetement = p.id_vetement
-    LEFT JOIN livraison liv ON liv.id_commande = cmd.id_commande
+    LEFT JOIN lien_commande_article lca ON lca.id_client = c.id_client  
+    LEFT JOIN article art ON art.id_article = lca.id_article
+    LEFT JOIN livraison liv ON liv.id_livraison = cmd.id_livraison
     WHERE c.id_client = ?";
 
 $stmt = $pdo->prepare($sql);
@@ -410,12 +410,14 @@ if (count($commandes) > 0):
             'prenom' => $cmd['prenom'],
             'email' => $cmd['email'],
             'telephone' => $cmd['telephone'],
+            'ville' => $cmd['ville'],
+            'pays' => $cmd['pays'],
             'lieu_habitation' => $cmd['lieu_habitation']
         ];
        $grouped[$key]['commande'] = [
     'id_commande' => $cmd['id_commande'],
     'mode_paiement' => $cmd['mode_paiement'],
-    
+    'montant_total' => $cmd['montant_total'],
     'date_commande' => $cmd['date_commande'],
     'statut_commande' => $cmd['statut_commande'],
     'statut_livraison' => $cmd['statut_livraison'],
@@ -426,7 +428,7 @@ if (count($commandes) > 0):
             'image' => $cmd['image'],
             'nom_modele' => $cmd['nom_modele'],
             'quantite' => $cmd['quantite'],
-            'taille' => $cmd['taille'],
+            'taille_standard' => $cmd['taille_standard'],
             'tissu' => $cmd['tissu'],
             'personnalisation' => $cmd['personnalisation'],
             'prix' => $cmd['prix']
@@ -441,6 +443,8 @@ if (count($commandes) > 0):
         <p><strong>Nom et prénom :</strong> <?= htmlspecialchars($commande['client']['nom'] . ' ' . $commande['client']['prenom']) ?></p>
         <p><strong>Email :</strong> <?= htmlspecialchars($commande['client']['email']) ?></p>
         <p><strong>Téléphone :</strong> <?= htmlspecialchars($commande['client']['telephone']) ?></p>
+        <p><strong>Pays :</strong> <?= htmlspecialchars($commande['client']['pays']) ?></p>
+        <p><strong>Ville :</strong> <?= htmlspecialchars($commande['client']['ville']) ?></p>
         <p><strong>Lieu d'habitation :</strong> <?= htmlspecialchars($commande['client']['lieu_habitation']) ?></p>
          <p><strong>Mode de paiement :</strong> <?= htmlspecialchars($commande['commande']['mode_paiement']) ?></p>
         

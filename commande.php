@@ -2,41 +2,49 @@
 require 'config.php';
 require 'session.php';
 
-if (session_status() == PHP_SESSION_NONE) {
+if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
 // Vérifie que le client est connecté
-if (!isset($_SESSION['id_client'])) {
+if (!isset($_SESSION['id'])) {
     echo "<p style='color:red;'>❌ Vous devez être connecté pour passer une commande.</p>";
     exit;
 }
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $tel    = $_POST['tel'];
-    $mode   = $_POST['mode'];
-    $lieu   = $_POST['lieu'];
-    $date   = $_POST['date'];
+    $tel = $_POST['tel'];
+    $mode = $_POST['mode'];
+    $statut_com = $_POST['stat_com'] ?? 'En attente'; // Valeur par défaut si non définie
+    $montant_total = $_POST['montant'] ?? 0; // Valeur par défaut si non définie
+    $pays = $_POST['pays'];
+    $ville = $_POST['ville'];
+    $lieu = $_POST['lieu'];
+    $date = $_POST['date'];
     $dateLivraison = $_POST['dateliv'];
 
     try {
         $pdo->beginTransaction();
 
-        $idClient = $_SESSION['id_client'];
+        $idClient = $_SESSION['id'];
 
         // Mise à jour de l'adresse et téléphone
-        $sqlUpdate = "UPDATE client SET lieu_habitation = ?, telephone = ? WHERE id_client = ?";
-        $pdo->prepare($sqlUpdate)->execute([$lieu, $tel, $idClient]);
-
-        // Verrouille le panier
-        $sqlLock = "UPDATE client SET panier_lock = 1 WHERE id_client = ?";
-        $pdo->prepare($sqlLock)->execute([$idClient]);
-
-        $_SESSION['panier_lock'] = true;
+        $sqlUpdate = "UPDATE client SET pays = ?, ville = ?, lieu_habitation = ?, telephone = ? WHERE id_client = ?";
+        $stmt = $pdo->prepare($sqlUpdate);
+        $stmt->execute([$pays, $ville, $lieu, $tel, $idClient]);
 
         // Insertion de la commande
-        $sqlCommande = "INSERT INTO commande (mode_paiement, id_client, date_commande, date_liv_souhait) VALUES (?, ?, ?, ?)";
-        $pdo->prepare($sqlCommande)->execute([$mode, $idClient, $date, $dateLivraison]);
+        $sqlCommande = "INSERT INTO commande (mode_paiement, date_commande, statut_commande, montant_total) VALUES (?, ?, ?, ?)";
+        $stmt = $pdo->prepare($sqlCommande);
+        $stmt->execute([$mode, $date, $statut_com, $montant_total]);
+
+        // Récupération de l'ID de la commande insérée
+        $idCommande = $pdo->lastInsertId();
+
+        // Insertion dans la table de liaison
+        $sqlLien = "INSERT INTO lien_commande_article (id_client, id_commande) VALUES (?, ?)";
+        $stmt = $pdo->prepare($sqlLien);
+        $stmt->execute([$idClient, $idCommande]);
 
         $pdo->commit();
 
@@ -47,6 +55,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 }
 ?>
+
 
 
 <!DOCTYPE html>
@@ -299,7 +308,19 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <input type="text" id="lieu" name="lieu" placeholder="Lieu d'habitation" required>
 
    
-        <?php include 'head_panier.php'; ?>
+        <?php $id_client = $_SESSION['id'];
+        $query = "SELECT *
+                  FROM lien_commande_article lca
+                  JOIN article art ON lca.id_article = art.id_article
+                 JOIN mensuration m ON lca.id_mensuration= m.id_mensuration
+                  WHERE lca.id_client = ?
+  
+                  ";
+        $stmt = $pdo->prepare($query);
+        $stmt->execute([$id_client]);
+        $articles = $stmt->fetchAll();
+          $total = 0;
+ ?>
 <table>
     <thead>
     <tr>
@@ -309,6 +330,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         <th>Quantité</th>
         <th>Taille</th>
         <th>Personnalisation</th>
+        <th>Prix supplémentaire</th>
         <th>Prix</th>
         <th>Total</th>
        
@@ -319,15 +341,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <?php foreach ($articles as $item): ?>
         <?php $sous_total = $item['quantite'] * $item['prix']; ?>
         <?php $total += $sous_total; ?>
-        <tr data-id="<?= $item['id_panier'] ?>">
-        <td><a href="javascript:void(0)"><img src="uploads/<?= htmlspecialchars($item['image']) ?>" alt="Image Client" class="img-thumbnail" id="myImg"></td>
+        <tr data-id="<?= $item['id_lca'] ?>">
+        <td><a href="javascript:void(0)"><img src="uploads/<?= htmlspecialchars($item['image'] ?? '') ?>" alt="Image Client" class="img-thumbnail" id="myImg"></td>
              
             <td><?= $item['nom_modele'] ?></td>
-            <td><a href="javascript:void(0)"><img src="uploads/<?= htmlspecialchars($item['tissu']) ?>" alt="Image Client" class="img-thumbnail" id="myImg"></td>
-             
+            <td><a href="javascript:void(0)"><img src="uploads/<?= htmlspecialchars(!empty($item['tissu']) ? $item['tissu'] : "Aucun") ?>" alt="Image Client" class="img-thumbnail" id="myImg"></td>
+           
+           
+
             <td><?= $item['quantite'] ?></td>
-            <td><?= htmlspecialchars($item['taille']) ?></td>
-            <td><?= htmlspecialchars($item['personnalisation']) ?></td>
+            <td><?= htmlspecialchars(!empty($item['taille_standard']) ? $item['taille_standard'] : "Aucun") ?></td>
+            <td><?= htmlspecialchars(!empty($item['description_modele']) ? $item['description_modele'] : "Aucune") ?></td>
+             <td><?= htmlspecialchars(!empty($item['supplement_prix']) ? $item['supplement_prix'] : "Aucune") ?></td>
             <td><?= $item['prix'] ?> FCFA</td>
             <td class="sous-total"><?= $sous_total ?> FCFA</td>
          </tr>

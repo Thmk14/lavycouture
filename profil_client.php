@@ -3,7 +3,7 @@ if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 require 'config.php';
-$id_client = $_SESSION['id_client'];
+$id_client = $_SESSION['id'];
 
 $requete = "SELECT * FROM client WHERE id_client = ?";
 $stmt = $pdo->prepare($requete);
@@ -155,10 +155,7 @@ $profil = $stmt->fetch(PDO::FETCH_ASSOC);
         <label>Téléphone :</label> <span><?= htmlspecialchars($profil['telephone']) ?></span>
     </div>
 
-    <div class="profil-item">
-        <label>Adresse :</label> <span><?= htmlspecialchars($profil['lieu_habitation']) ?></span>
-    </div>
-
+    
     <a href="modifier_profil_client.php" class="btn-modifier">Modifier mon profil</a>
 </div>
 

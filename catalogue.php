@@ -5,7 +5,7 @@ if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
-$isLoggedIn = isset($_SESSION['id_client']);
+$isLoggedIn = isset($_SESSION['id']);
 
 
 

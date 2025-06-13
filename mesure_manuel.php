@@ -1,6 +1,6 @@
 <?php
 require 'config.php';
-
+session_start();
 // Récupérer tous les clients
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
@@ -29,10 +29,17 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     ]);
 
     if ($result) {
-        echo "<script>alert('✅ Mesures enregistrées avec succès !'); window.history.go(-2);</script>";
-    } else {
-        echo "<p>❌ Une erreur est survenue lors de l’enregistrement des mesures.</p>";
-    }
+    // Récupérer l'ID de la mensuration insérée
+    $id_mensuration = $pdo->lastInsertId();
+    $_SESSION['id_mensuration'] = $id_mensuration;
+
+    // Rediriger vers la page précédente avec l'ID comme paramètre GET
+    echo "<script>
+        window.history.go(-2) ;
+    </script>";
+} else {
+    echo "<p>❌ Une erreur est survenue lors de l’enregistrement des mesures.</p>";
+}
 }
 ?>
 

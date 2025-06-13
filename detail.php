@@ -2,6 +2,8 @@
 require 'session.php';
 include 'config.php';
 
+$isLoggedIn = isset($_SESSION['id']);
+
 if (!$isLoggedIn) {
     header("Location: connexion.php");
     exit();
@@ -21,7 +23,7 @@ if (!$produit) {
 }
 
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['add_to_cart'])) {
-    $id_client = $_SESSION['id_client'];
+    $id_client = $_SESSION['id'];
     $quantite = max(1, (int)$_POST['product_quantity']);
     $taille = trim($_POST['taille'] ?? '');
 
@@ -71,7 +73,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['add_to_cart'])) {
 
 
     // Insertion mensuration seulement si taille "Mesures" choisie
+    if (isset( $_SESSION['id_mensuration'])) {
+    $id_mensuration = $_SESSION['id_mensuration'];
+    // Tu peux l’utiliser ici pour remplir un champ ou le stocker
+}
+else{
+
     $id_mensuration = null;
+    
+}
     if ($taille === 'XS' || $taille === 'S' || $taille === 'M' || $taille === 'L' || $taille === 'XL') {
         $stmt = $pdo->prepare("INSERT INTO mensuration (taille_standard) VALUES (?)");
         $stmt->execute([$taille]);
@@ -79,7 +89,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['add_to_cart'])) {
     }
 
     // Ajouter dans lien_commande_article
-    $stmt = $pdo->prepare("INSERT INTO lien_commande_article (id_client, id_article, quantite, description, tissu, supplement_prix, id_mensuration) VALUES ( ?, ?, ?, ?, ?, ?, ?)");
+    $stmt = $pdo->prepare("INSERT INTO lien_commande_article (id_client, id_article, quantite, description_modele, tissu, supplement_prix, id_mensuration) VALUES ( ?, ?, ?, ?, ?, ?, ?)");
     $stmt->execute([$id_client, $id_article, $quantite, $personnalisation, $tissu, $supplement, $id_mensuration]);
 
     echo "<script>alert('Produit ajouté au panier avec succès ! ✅');</script>";

@@ -2,7 +2,7 @@
 require 'session.php';
 require 'config.php';
 
-$id_client = $_SESSION['id_client'];
+$id_client = $_SESSION['id'];
 
 $sql = "SELECT lca.*, art.nom_modele, art.image, art.prix
         FROM lien_commande_article lca
