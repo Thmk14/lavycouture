@@ -1,6 +1,6 @@
 <?php
 $host = "localhost";
-$dbname = "lavy_couture";
+$dbname = "lavycouture";
 $username = "root";  // Change si nécessaire
 $password = "";      // Change si nécessaire
 

@@ -254,10 +254,11 @@ require 'config.php';
         <?php
         $id_client = $_SESSION['id'];
         $query = "SELECT *
-                  FROM lien_commande_article lca
-                  JOIN article art ON lca.id_article = art.id_article
-                 JOIN mensuration m ON lca.id_mensuration= m.id_mensuration
-                  WHERE lca.id_client = ?
+                  FROM concerner c
+                  JOIN article art ON c.id_article = art.id_article
+                  JOIN commande cmd ON c.id_commande = cmd.id_commande
+                 JOIN mensuration m ON cmd.id_mensuration= m.id_mensuration
+                  WHERE cmd.id_client = ?
   
                   ";
         $stmt = $pdo->prepare($query);
@@ -283,13 +284,13 @@ require 'config.php';
 
             echo "<td><img src='images/{".(!empty($row['tissu']) ? $row['tissu'] : "Aucun")." }' style='height: 80px;'> </td>";
 
-        echo '<td><a href="listmesurec.php?id_lca=' . $row['id_lca'] . '" class="btn-mesures">Mensuration</a></td>';
+        echo '<td><a href="listmesurec.php?id_commande=' . $row['id_commande'] . '" class="btn-mesures">Mensuration</a></td>';
   
              echo "<td>$total FCFA</td>";
            
 
             // Bouton supprimer
-            echo "<td><a href='supprimer_panier.php?id={$row['id_lca']}' onclick='return confirm(\"Supprimer cet article ?\")'>Supprimer</a></td>";
+            echo "<td><a href='supprimer_panier.php?id={$row['id_concerner']}' onclick='return confirm(\"Supprimer cet article ?\")'>Supprimer</a></td>";
 
             echo "</tr>";
         }

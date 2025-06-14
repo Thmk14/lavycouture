@@ -34,15 +34,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $stmt->execute([$pays, $ville, $lieu, $tel, $idClient]);
 
         // Insertion de la commande
-        $sqlCommande = "INSERT INTO commande (mode_paiement, date_commande, statut_commande, montant_total) VALUES (?, ?, ?, ?)";
+        $sqlCommande = "INSERT INTO commande (mode_paiement, date_commande,date_liv, statut_commande, montant_total) VALUES (?, ?, ?, ?)";
         $stmt = $pdo->prepare($sqlCommande);
-        $stmt->execute([$mode, $date, $statut_com, $montant_total]);
+        $stmt->execute([$mode, $date,  $dateLivraison, $statut_com, $montant_total]);
 
         // Récupération de l'ID de la commande insérée
         $idCommande = $pdo->lastInsertId();
 
         // Insertion dans la table de liaison
-        $sqlLien = "INSERT INTO lien_commande_article (id_client, id_commande) VALUES (?, ?)";
+        $sqlLien = "INSERT INTO commande (id_client, id_commande) VALUES (?, ?)";
         $stmt = $pdo->prepare($sqlLien);
         $stmt->execute([$idClient, $idCommande]);
 
@@ -310,8 +310,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
    
         <?php $id_client = $_SESSION['id'];
         $query = "SELECT *
-                  FROM lien_commande_article lca
-                  JOIN article art ON lca.id_article = art.id_article
+                  FROM commande cmd
+                  JOIN article art ON .id_article = art.id_article
                  JOIN mensuration m ON lca.id_mensuration= m.id_mensuration
                   WHERE lca.id_client = ?
   

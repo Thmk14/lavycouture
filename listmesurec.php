@@ -3,17 +3,16 @@ require 'config.php';
 
 
 
-if (isset($_GET['id_lca']) && is_numeric($_GET['id_lca'])) {
-    $id_lca = (int) $_GET['id_lca'];
+if (isset($_GET['id_commande']) && is_numeric($_GET['id_commande'])) {
+    $id_concerner = (int) $_GET['id_commande'];
 
     // Récupérer la mensuration liée à l'article commandé
-    $sql = "SELECT m.tour_taille, m.tour_poitrine, m.tour_hanche, m.taille_buste, m.longueur_bras, m.tour_bras,
-                m.longueur_jambe, m.tour_cuisse, m.tour_cou, m.largeur_epaule, m.longueur_entrejambe, m.longueur_total
+    $sql = "SELECT m.*
             FROM mensuration m
-            INNER JOIN lien_commande_article lca ON m.id_mensuration = lca.id_mensuration
-            WHERE lca.id_lca = ?";
+            INNER JOIN  commande cmd ON m.id_mensuration = cmd.id_mensuration
+            WHERE cmd.id_commande= ?";
     $stmt = $pdo->prepare($sql);
-    $stmt->execute([$id_lca]);
+    $stmt->execute([$id_concerner]);
     $mesure = $stmt->fetch(PDO::FETCH_ASSOC);
 } else {
     header('Location: panier.php');
@@ -116,11 +115,11 @@ if (isset($_GET['id_lca']) && is_numeric($_GET['id_lca'])) {
 <div class="container">
     <h1>Mesures du Client</h1>
 
-    <?php if (!$mesure): ?>
+    <?php if ($mesure['taille_standard']): ?>
         <p style="text-align:center; font-size:20px; color:gray;">Aucune mesure enregistrée pour ce client.</p>
     
         
-    <?php elseif ($mesure) : ?>
+    <?php else : ?>
        <table>
             <tr><th>Tour de Taille</th><td><?= htmlspecialchars($mesure['tour_taille'] ?? '') ?> cm</td></tr>
             <tr><th>Tour de Poitrine</th><td><?= htmlspecialchars($mesure['tour_poitrine'] ?? '') ?> cm</td></tr>

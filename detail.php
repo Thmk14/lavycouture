@@ -32,7 +32,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['add_to_cart'])) {
     if (!in_array($taille, $taille_autorisees)) {
         exit("Taille non valide.");
     }
-
+     $montant_total = null;
     $tissu = null;
     $personnalisation = null;
     $supplement = 0;
@@ -83,14 +83,19 @@ else{
     
 }
     if ($taille === 'XS' || $taille === 'S' || $taille === 'M' || $taille === 'L' || $taille === 'XL') {
-        $stmt = $pdo->prepare("INSERT INTO mensuration (taille_standard) VALUES (?)");
-        $stmt->execute([$taille]);
+        $stmt = $pdo->prepare("INSERT INTO mensuration (id_mensuration,taille_standard) VALUES (?,?)");
+        $stmt->execute([$id_mensuration,$taille]);
         $id_mensuration = $pdo->lastInsertId();
     }
 
     // Ajouter dans lien_commande_article
-    $stmt = $pdo->prepare("INSERT INTO lien_commande_article (id_client, id_article, quantite, description_modele, tissu, supplement_prix, id_mensuration) VALUES ( ?, ?, ?, ?, ?, ?, ?)");
-    $stmt->execute([$id_client, $id_article, $quantite, $personnalisation, $tissu, $supplement, $id_mensuration]);
+    $stmt = $pdo->prepare("INSERT INTO commande (id_client,id_mensuration, quantite, description_modele, tissu, supplement_prix, montant_total) VALUES ( ?,?, ?, ?, ?, ?, ?)");
+    $stmt->execute([$id_client,$id_mensuration, $quantite, $personnalisation, $tissu, $supplement, $montant_total]);
+
+    $id_commande = $pdo->lastInsertId();
+    $stmt = $pdo->prepare("INSERT INTO concerner (id_commande, id_article) VALUES ( ?, ?)");
+    $stmt->execute([$id_commande, $id_article]);
+
 
     echo "<script>alert('Produit ajouté au panier avec succès ! ✅');</script>";
     header("Location: panier.php");
