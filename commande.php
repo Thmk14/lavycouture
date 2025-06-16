@@ -13,15 +13,20 @@ if (!isset($_SESSION['id'])) {
 }
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $tel = $_POST['tel'];
-    $mode = $_POST['mode'];
-    $statut_com = $_POST['stat_com'] ?? 'En attente'; // Valeur par défaut si non définie
-    $montant_total = $_POST['montant'] ?? 0; // Valeur par défaut si non définie
-    $pays = $_POST['pays'];
-    $ville = $_POST['ville'];
-    $lieu = $_POST['lieu'];
-    $date = $_POST['date'];
-    $dateLivraison = $_POST['dateliv'];
+    // Validation et assainissement des données
+    $tel = filter_var($_POST['tel'], FILTER_SANITIZE_STRING);
+    $mode = filter_var($_POST['mode'], FILTER_SANITIZE_STRING);
+    $montant_total = isset($_POST['montant']) ? filter_var($_POST['montant'], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION) : 0;
+    $pays = filter_var($_POST['pays'], FILTER_SANITIZE_STRING);
+    $ville = filter_var($_POST['ville'], FILTER_SANITIZE_STRING);
+    $lieu = filter_var($_POST['lieu'], FILTER_SANITIZE_STRING);
+    $date = filter_var($_POST['date'], FILTER_SANITIZE_STRING);
+
+    // Vérification des champs obligatoires
+    if (empty($tel) || empty($mode) || empty($pays) || empty($ville) || empty($lieu) || empty($date)) {
+        echo "<p style='color:red;'>❌ Tous les champs sont obligatoires.</p>";
+        exit;
+    }
 
     try {
         $pdo->beginTransaction();
@@ -34,17 +39,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $stmt->execute([$pays, $ville, $lieu, $tel, $idClient]);
 
         // Insertion de la commande
-        $sqlCommande = "INSERT INTO commande (mode_paiement, date_commande,date_liv, statut_commande, montant_total) VALUES (?, ?, ?, ?)";
+        $sqlCommande = "UPDATE commande SET etat_commande= ?, mode_paiement=?, date_commande=?, montant_total=? WHERE id_client = ?";
         $stmt = $pdo->prepare($sqlCommande);
-        $stmt->execute([$mode, $date,  $dateLivraison, $statut_com, $montant_total]);
-
-        // Récupération de l'ID de la commande insérée
-        $idCommande = $pdo->lastInsertId();
-
-        // Insertion dans la table de liaison
-        $sqlLien = "INSERT INTO commande (id_client, id_commande) VALUES (?, ?)";
-        $stmt = $pdo->prepare($sqlLien);
-        $stmt->execute([$idClient, $idCommande]);
+        $stmt->execute([1, $mode, $date, $montant_total, $idClient]);
 
         $pdo->commit();
 
@@ -55,6 +52,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 }
 ?>
+
 
 
 
@@ -289,17 +287,17 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     </select>
 
 
-    <label for="mode">Pays</label>
-    <select name="mode" id="mode" required>
+    <label for="pays">Pays</label>
+    <select name="pays" id="pays" required>
         <option value="">-- Pays --</option>
         <option value="Côte d'Ivoire">Côte d'Ivoire</option>
     </select>
 
-    <label for="mode">Ville</label>
-    <select name="mode" id="mode" required>
+    <label for="ville">Ville</label>
+    <select name="ville" id="ville" required>
         <option value="">-- Ville --</option>
-        <option value="Paiement à la livraison">Abidjan</option>
-        <option value="Paiement par mobile money">Yamoussoukro</option>
+        <option value="Abidjan">Abidjan</option>
+        <option value="Yamoussoukro">Yamoussoukro</option>
     </select>
 
 
@@ -310,10 +308,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
    
         <?php $id_client = $_SESSION['id'];
         $query = "SELECT *
-                  FROM commande cmd
-                  JOIN article art ON .id_article = art.id_article
-                 JOIN mensuration m ON lca.id_mensuration= m.id_mensuration
-                  WHERE lca.id_client = ?
+                  FROM concerner c
+                  JOIN article art ON c.id_article = art.id_article
+                  JOIN commande cmd ON c.id_commande = cmd.id_commande
+                 JOIN mensuration m ON cmd.id_mensuration= m.id_mensuration
+                  WHERE cmd.id_client = ?
   
                   ";
         $stmt = $pdo->prepare($query);
@@ -341,7 +340,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <?php foreach ($articles as $item): ?>
         <?php $sous_total = $item['quantite'] * $item['prix']; ?>
         <?php $total += $sous_total; ?>
-        <tr data-id="<?= $item['id_lca'] ?>">
+        <tr data-id="<?= $item['id_concerner'] ?>">
         <td><a href="javascript:void(0)"><img src="uploads/<?= htmlspecialchars($item['image'] ?? '') ?>" alt="Image Client" class="img-thumbnail" id="myImg"></td>
              
             <td><?= $item['nom_modele'] ?></td>

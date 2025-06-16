@@ -1,9 +1,9 @@
-
 <?php
 require 'config.php';
 require 'session.php';
 
-if (session_status() == PHP_SESSION_NONE) {
+// Vérifier si la session est déjà démarrée
+if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
@@ -13,34 +13,24 @@ if (!$id_client) {
     die("Erreur : ID client non défini.");
 }
 
-// Suppression de la commande et du panier
+// Suppression de la commande
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_commande_id'])) {
     $commande_id = $_POST['delete_commande_id'];
 
-    // Vérification du statut de la commande et de la livraison
-    $stmt_status = $pdo->prepare("
-        SELECT cmd.statut_commande, liv.statut_livraison 
-        FROM commande cmd
-        LEFT JOIN livraison liv ON cmd.id_commande = liv.id_commande
-        WHERE cmd.id_commande = ?
-    ");
+    // Vérification du statut de la commande
+    $stmt_status = $pdo->prepare("SELECT statut_commande FROM commande WHERE id_commande = ?");
     $stmt_status->execute([$commande_id]);
     $status = $stmt_status->fetch(PDO::FETCH_ASSOC);
 
-    // Vérification si la commande peut être supprimée
     if ($status && $status['statut_commande'] === 'en attente') {
         try {
             $pdo->beginTransaction();
 
-            // Supprimer les articles liés à la commande
-            $stmt = $pdo->prepare("DELETE FROM commande WHERE id_commande = ?");
+            // Suppression des articles liés à la commande
+            $stmt = $pdo->prepare("DELETE FROM concerner WHERE id_commande = ?");
             $stmt->execute([$commande_id]);
 
-            // Supprimer la livraison liée si elle existe
-            $stmt = $pdo->prepare("DELETE FROM livraison WHERE id_commande = ?");
-            $stmt->execute([$commande_id]);
-
-            // Supprimer la commande elle-même
+            // Suppression de la commande
             $stmt = $pdo->prepare("DELETE FROM commande WHERE id_commande = ?");
             $stmt->execute([$commande_id]);
 
@@ -59,21 +49,61 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_commande_id'])
 }
 
 // Récupération des données du client et des commandes
-$sql = " SELECT DISTINCT c.nom, c.prenom, c.email, c.telephone,c.ville, c.pays, c.lieu_habitation,
-        cmd.mode_paiement, cmd.statut_commande, cmd.id_commande, cmd.date_commande,cmd.montant_total, 
-        lca.*, liv.statut_livraison, liv.date_livraison,
-        art.image AS image, art.nom_modele AS nom_modele, v.prix AS prix
-    FROM commande cmd   
-    JOIN client c ON cmd.id_client = c.id_client
-    LEFT JOIN lien_commande_article lca ON lca.id_client = c.id_client  
-    LEFT JOIN article art ON art.id_article = lca.id_article
-    LEFT JOIN livraison liv ON liv.id_livraison = cmd.id_livraison
-    WHERE c.id_client = ?";
+$sql = "SELECT c.*, art.*, cmd.*, cl.*, m.*
+        FROM concerner c
+        JOIN article art ON c.id_article = art.id_article
+        JOIN commande cmd ON c.id_commande = cmd.id_commande
+        JOIN client cl ON cmd.id_client = cl.id_client
+        JOIN mensuration m ON cmd.id_mensuration = m.id_mensuration
+        WHERE cmd.id_client = ?";
 
 $stmt = $pdo->prepare($sql);
 $stmt->execute([$id_client]);
 $commandes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Regroupement des commandes par client
+$grouped = [];
+foreach ($commandes as $cmd) {
+    $key = $cmd['id_client'];
+    if (!isset($grouped[$key])) {
+        $grouped[$key] = [
+            'client' => [
+                'nom' => $cmd['nom'],
+                'prenom' => $cmd['prenom'],
+                'email' => $cmd['email'],
+                'telephone' => $cmd['telephone'],
+                'ville' => $cmd['ville'],
+                'pays' => $cmd['pays'],
+                'lieu_habitation' => $cmd['lieu_habitation']
+            ],
+            'commandes' => []
+        ];
+    }
+
+    $grouped[$key]['commandes'][] = [
+        'id_commande' => $cmd['id_commande'],
+        'mode_paiement' => $cmd['mode_paiement'],
+        'montant_total' => $cmd['montant_total'],
+        'date_commande' => $cmd['date_commande'],
+        'statut_commande' => $cmd['statut_commande'],
+        'statut_livraison' => $cmd['statut_livraison'],
+        'date_livraison' => $cmd['date_livraison'],
+        'articles' => [
+            [
+                'image' => $cmd['image'],
+                'nom_modele' => $cmd['nom_modele'],
+                'quantite' => $cmd['quantite'],
+                'taille_standard' => $cmd['taille_standard'],
+                'tissu' => $cmd['tissu'],
+                'description_modele' => $cmd['description_modele'],
+                'prix' => $cmd['prix']
+            ]
+        ]
+    ];
+}
+
 ?>
+
 
 
 
@@ -88,104 +118,103 @@ $commandes = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <title>Commandes Clients - Admin</title>
     <style>
 
-        /* Styles généraux */
+ /* ========= Global Styles ========= */
 body {
-    
     margin: 0;
     padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color:rgb(254, 216, 241);
+    color: #333;
 }
-  
-        h1 {
-            text-align: center;
-            color: #a72872;
 
-            font-size: 40px;
-            font-family:Georgia, 'Times New Roman', Times, serif;
-        }
-        .commande-block {
-            background: #fff;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            padding: 20px;
-            margin: 200px 50px;
-            
-        }
-        .commande-block h3 {
-            color: #a72872;
-            margin-bottom: 15px;
-        }
-        .commande-block p {
-            margin: 5px 0;
-            font-size: 15px;
-            color: #333;
-        }
-        table {
-            width: 100%;
-            margin-top: 15px;
-            border-collapse: collapse;
-        }
-        th, td {
-            padding: 10px;
-            border: 1px solid #eee;
-            text-align: center;
-        }
-        th {
-            background-color: #f8c4e6;
-            color: white;
-        }
-        img {
-            width: 70px;
-            border-radius: 6px;
-        }
-        .total {
-            text-align: right;
-            font-weight: bold;
-            color:rgba(167, 40, 114, 0.99);
-            margin-top: 10px;
-        }
-        .buttonn {
-            display: inline-block;
-            padding: 10px;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            margin-top: 10px;
-            border:none;
-        }
+h1 {
+    text-align: center;
+    color: #a72872;
+    margin: 150px 0 30px;
+    font-size: 2.5rem;
+}
 
-       
-    .disabled-button {
-        background: rgba(81, 77, 79, 0.75);
-        color: white;
-        cursor: not-allowed;
-    }
-    .active-button {
-        background-color:rgba(241, 98, 186, 0.75);
-        color: black;
-    }
-            
-    .no-data {
-    font-size: 30px;
-    margin: 200px auto;
-    padding: 10px;
+/* ========= Commande Block ========= */
+.commande-block {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
+    padding: 25px;
+    margin: 30px 20px;
+    transition: 0.3s;
+}
+
+.commande-block h2 {
+    font-size: 1.5rem;
+    color: #a72872;
+    margin-bottom: 15px;
+}
+
+.commande-block p {
+    margin: 8px 0;
+    font-size: 1rem;
+}
+
+/* ========= Tables ========= */
+table {
+    width: 100%;
+    margin-top: 20px;
+    border-collapse: collapse;
+    overflow-x: auto;
+}
+
+th, td {
+    padding: 12px;
+    border: 1px solid #f1d5e7;
     text-align: center;
 }
 
-.no-data,
-form {
-    width: 100%;
-    margin-bottom:50px;
+th {
+    background-color:rgb(184, 26, 128);
+    color: #fff;
+    font-weight: bold;
 }
 
-form button {
-    width: 30%;
-    margin: 80px auto;
+/* ========= Images ========= */
+img {
+    border-radius: 6px;
+    width: 70px;
 }
 
+.img-thumbnail {
+    width: 100px;
+    height: auto;
+    cursor: pointer;
+}
+
+/* ========= Buttons ========= */
+.buttonn {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: rgba(241, 98, 186, 0.75);
+    color: black;
+    text-decoration: none;
+    border-radius: 6px;
+    border: none;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
+.disabled-button {
+    background: rgba(81, 77, 79, 0.75);
+    color: white;
+    cursor: not-allowed;
+}
+
+.active-button {
+    background-color: rgba(241, 98, 186, 0.75);
+    color: black;
+}
+
+/* ========= Status Tags ========= */
 .status {
     font-weight: bold;
-    font-size: 15px;
-    position: relative;
+    font-size: 0.95rem;
     display: inline-block;
 }
 
@@ -223,256 +252,192 @@ form button {
     100% { opacity: 1; }
 }
 
-
-        
-/* Responsive styles */
-@media screen and (max-width: 768px) {
-    .commande-block {
-            background: #fff;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            padding: 20px;
-            margin: 200px 0 ;
-            
-        }
-
-        
-            
-        .no-data {
-    font-size: 30px;
-    margin: 200px auto;
-    padding: 10px;
-    text-align: center;
+/* ========= Totals ========= */
+.total {
+    text-align: right;
+    font-weight: bold;
+    color: #a72872;
+    margin-top: 10px;
 }
 
-.no-data,
+.total-general {
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    background-color:rgb(254, 251, 253);
+    border: 2px solid rgb(253, 208, 235);
+    border-radius: 8px;
+    color: #a72872;
+    padding: 15px;
+    margin: 40px 20px 80px 20px;
+    box-shadow: 0 3px 8px rgba(114, 19, 75, 0.35);
+}
+
+/* ========= No Data ========= */
+.no-data {
+    font-size: 1.8rem;
+    text-align: center;
+    margin: 200px auto;
+    color: #999;
+}
+
+/* ========= Forms ========= */
 form {
     width: 100%;
-    margin-bottom:50px;
+    text-align: center;
+    margin-bottom: 50px;
 }
 
 form button {
     width: 40%;
-    margin: 80px auto;
+    padding: 12px 20px;
+    margin-top: 40px;
+    background-color: rgb(251, 107, 189);
+    color: white;
+    font-size: 1rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
 }
 
-        
+/* ========= Modals ========= */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 999;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.9);
+    overflow: auto;
+    padding-top: 80px;
+}
+
+.modal-content {
+    margin: auto;
+    display: block;
+    max-width: 90%;
+    width: 600px;
+}
+
+.close {
+    position: absolute;
+    top: 30px;
+    right: 45px;
+    color: #f1f1f1;
+    font-size: 36px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.close:hover {
+    color: #bbb;
+}
+
+/* ========= Responsive ========= */
+@media (max-width: 992px) {
+    h1 {
+        font-size: 2rem;
+    }
+
+    .commande-block {
+        margin: 20px 10px;
+        padding: 20px;
+    }
 
     table {
-        font-size: 12px;
+        font-size: 0.9rem;
     }
 
     th, td {
         padding: 8px;
     }
 
-    img {
-        width: 50px;
-    }
-
-    h1 {
-        font-size: 20px;
+    img, .img-thumbnail {
+        width: 60px;
     }
 }
 
-@media screen and (max-width: 480px) {
+@media (max-width: 576px) {
+    h1 {
+        font-size: 1.5rem;
+        margin-top: 100px;
+    }
+
+    .buttonn {
+        font-size: 0.9rem;
+        padding: 8px 12px;
+    }
+
+    form button {
+        width: 80%;
+        font-size: 0.9rem;
+    }
+
+    .modal-content {
+        width: 90%;
+    }
+
     table {
         display: block;
         overflow-x: auto;
     }
 
     th, td {
-        font-size: 10px;
+        font-size: 0.75rem;
+        white-space: nowrap;
     }
 
-    img {
-        width: 40px;
+    img, .img-thumbnail {
+        width: 50px;
     }
-
-    h1 {
-        font-size: 18px;
-        margin-bottom: 30px;
-    }
-
-    .buttonn {
-        
-        padding: 5px;
-        font-size: 12px;
-    }
-
-
-
-     /* Le style de la fenêtre modale */
-  .modal {
-      display: none; /* Cacher par défaut */
-      position: fixed;
-      z-index: 1;
-      padding-top: 100px;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      overflow: auto;
-      background-color: rgb(0,0,0); /* Black */
-      background-color: rgba(0,0,0,0.9); /* Black with opacity */
-    }
-
-    /* Contenu de l'image dans la fenêtre modale */
-    .modal-content {
-      margin: auto;
-      display: block;
-      width: 50%;
-      max-width: 500px;
-    }
-
-    
-form button {
-    width: 80%;
-    margin: 80px auto;
 }
 
-    
-}
-
-        .main-content {
-    transition: margin-left 0.3s ease;
-    margin-left: 0;
-}
-
-#check:checked ~ .main-content {
-    margin-left: 250px; /* même largeur que la sidebar */
-}
-
-  /* Le style de la fenêtre modale */
-  .modal {
-      display: none; /* Cacher par défaut */
-      position: fixed;
-      z-index: 1;
-      margin-top: 120px;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      overflow: auto;
-      background-color: rgb(0,0,0); /* Black */
-      background-color: rgba(0,0,0,0.9); /* Black with opacity */
-    }
-
-    /* Contenu de l'image dans la fenêtre modale */
-    .modal-content {
-      margin: 100px auto;
-      display: block;
-      width: 100%;
-      max-width: 600px;
-    }
-
-    /* Le bouton pour fermer la modale */
-    .close {
-      position: absolute;
-      top: 15px;
-      right: 35px;
-      color: #f1f1f1;
-      font-size: 40px;
-      font-weight: bold;
-      transition: 0.3s;
-    }
-
-    .close:hover,
-    .close:focus {
-      color: #bbb;
-      text-decoration: none;
-      cursor: pointer;
-    }
-
-    /* Style pour les images */
-    .img-thumbnail {
-      width: 100px;
-      height: auto;
-      cursor: pointer;
-    }
     </style>
 </head>
 <body>
-    
 <?php include 'menu.php'; ?>
-
 <div class="main-content">
 
-
 <?php
+$total_general = 0;
+
 if (count($commandes) > 0):
-    // Regrouper les lignes par client et commande
-    $grouped = [];
-    foreach ($commandes as $cmd) {
-        $key = $cmd['id_client'] . '_' . $cmd['id_commande'];
-        $grouped[$key]['client'] = [
-            'nom' => $cmd['nom'],
-            'prenom' => $cmd['prenom'],
-            'email' => $cmd['email'],
-            'telephone' => $cmd['telephone'],
-            'ville' => $cmd['ville'],
-            'pays' => $cmd['pays'],
-            'lieu_habitation' => $cmd['lieu_habitation']
-        ];
-       $grouped[$key]['commande'] = [
-    'id_commande' => $cmd['id_commande'],
-    'mode_paiement' => $cmd['mode_paiement'],
-    'montant_total' => $cmd['montant_total'],
-    'date_commande' => $cmd['date_commande'],
-    'statut_commande' => $cmd['statut_commande'],
-    'statut_livraison' => $cmd['statut_livraison'],
-    'date_livraison' => $cmd['date_livraison']
-];
+    foreach ($grouped as $client_id => $data): ?>
+        <h1>Mes informations</h1>
+        <div class="commande-block">
+            <p><strong>Nom et prénom :</strong> <?= htmlspecialchars($data['client']['nom'] . ' ' . $data['client']['prenom']) ?></p>
+            <p><strong>Email :</strong> <?= htmlspecialchars($data['client']['email']) ?></p>
+            <p><strong>Téléphone :</strong> <?= htmlspecialchars($data['client']['telephone']) ?></p>
+            <p><strong>Pays :</strong> <?= htmlspecialchars($data['client']['pays']) ?></p>
+            <p><strong>Ville :</strong> <?= htmlspecialchars($data['client']['ville']) ?></p>
+            <p><strong>Lieu d'habitation :</strong> <?= htmlspecialchars($data['client']['lieu_habitation']) ?></p>
+        </div>
 
-        $grouped[$key]['articles'][] = [
-            'image' => $cmd['image'],
-            'nom_modele' => $cmd['nom_modele'],
-            'quantite' => $cmd['quantite'],
-            'taille_standard' => $cmd['taille_standard'],
-            'tissu' => $cmd['tissu'],
-            'personnalisation' => $cmd['personnalisation'],
-            'prix' => $cmd['prix']
-        ];
-    }
-?>
-
-<?php foreach ($grouped as $commande): ?>
-    <div class="commande-block">
-    <h1>Mes commandes </h1>
-        <p><strong>Commande N° :</strong> #<?= htmlspecialchars($commande['commande']['id_commande']) ?></p>
-        <p><strong>Nom et prénom :</strong> <?= htmlspecialchars($commande['client']['nom'] . ' ' . $commande['client']['prenom']) ?></p>
-        <p><strong>Email :</strong> <?= htmlspecialchars($commande['client']['email']) ?></p>
-        <p><strong>Téléphone :</strong> <?= htmlspecialchars($commande['client']['telephone']) ?></p>
-        <p><strong>Pays :</strong> <?= htmlspecialchars($commande['client']['pays']) ?></p>
-        <p><strong>Ville :</strong> <?= htmlspecialchars($commande['client']['ville']) ?></p>
-        <p><strong>Lieu d'habitation :</strong> <?= htmlspecialchars($commande['client']['lieu_habitation']) ?></p>
-         <p><strong>Mode de paiement :</strong> <?= htmlspecialchars($commande['commande']['mode_paiement']) ?></p>
-        
-        <p><strong>Date de la commande :</strong> <?= htmlspecialchars($commande['commande']['date_commande']) ?></p>
-        
-       <p><strong>Statut commande :</strong>
+        <?php foreach ($data['commandes'] as $commande): ?>
+            <div class="commande-block">
+                <h2>Commande #<?= htmlspecialchars($commande['id_commande']) ?></h2>
+                <p><strong>Mode de paiement :</strong> <?= ($commande['mode_paiement']) ?></p>
+                <p><strong>Date de la commande :</strong> <?= ($commande['date_commande']) ?></p>
+                
+    <p><strong>Statut commande :</strong>
 <?php
-    $statut_commande = $commande['commande']['statut_commande'] ?? 'non défini';
-    echo match($statut_commande) {
-        'en attente' => "<span class='status en-attente' data-base='En attente'>En attente</span> ⏳",
-        'en préparation' => "<span class='status en-preparation' data-base='En préparation'>En préparation</span>🧵",
-        'prête' => "<span class='status en-livree'>Prête ✅</span>",
-        default => "<span class='status unknown'>" . htmlspecialchars($statut_commande) . "</span>"
-    };
+$statut_commande = strtolower($commande['statut_commande'] ?? 'en attente');
+echo match($statut_commande) {
+    'en route' => "<span class='status en-route' data-base='En route'>En route 🚚</span>",
+    'récupération du colis' => "<span class='status en-retrait' data-base='Récupération du colis'>Récupération du colis 📦</span>",
+    'livrée' => "<span class='status en-livree'>Livrée ✅</span>",
+    'en attente' => "<span class='status en-attente' data-base='En attente'>En attente ⏳</span>",
+    default => "<span class='status unknown'>Inconnu</span>"
+};
 ?>
 </p>
-
-      <p><strong>Date de livraison final :</strong> 
-<?= empty($commande['commande']['date_livraison'])
-     ? "<span class='status en-attente' data-base='En attente' style='color:gray;'>En attente</span>  ⏳" 
-     : htmlspecialchars($commande['commande']['date_livraison']) ?>
-</p>
-
-
 
 <p><strong>Statut livraison :</strong>
 <?php 
-    $statut_livraison = $commande['commande']['statut_livraison'] ?? '';
+    $statut_livraison = $commande['statut_livraison'] ?? 'En attente';
     echo match($statut_livraison) {
         'en route' => "<span class='status en-route' data-base='En route'>En route</span> 🚚",
         'récupération du colis' => "<span class='status en-retrait' data-base='Récupération du colis'>Récupération du colis</span>📦",
@@ -481,107 +446,69 @@ if (count($commandes) > 0):
     };
 ?>
 </p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Image</th>
+                            <th>Modèle</th>
+                            <th>Type tissu</th>
+                            <th>Quantité</th>
+                            <th>Taille</th>
+                            <th>Personnalisation</th>
+                            <th>Prix unitaire</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php $total_commande = 0; ?>
+                        <?php foreach ($commande['articles'] as $article): ?>
+                            <?php $sous_total = $article['quantite'] * $article['prix']; ?>
+                            <?php $total_commande += $sous_total; ?>
+                            <tr>
+                                <td><img src="uploads/<?= htmlspecialchars($article['image']) ?>" class="img-thumbnail"></td>
+                                <td><?= htmlspecialchars($article['nom_modele']) ?></td>
+                                <td><img src="uploads/<?= ($article['tissu']) ?>" class="img-thumbnail"></td>
+                                <td><?= ($article['quantite']) ?></td>
+                                <td><?= ($article['taille_standard']) ?></td>
+                                <td><?= ($article['description_modele']) ?></td>
+                                <td><?= ($article['prix']) ?> FCFA</td>
+                                <td><?= ($sous_total) ?> FCFA</td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
 
+                <!--p><strong>Total commande :</strong> <!?= number_format($total_commande, 0, ',', ' ') ?> FCFA</-p-->
+                
+                <?php $total_general += $total_commande; ?>
 
-
-
-        <?php endforeach; ?>
-        
-        <table>
-            <thead>
-                <tr>
-                    <th>Image</th>
-                    <th>Modèle</th>
-                    <th>Type tissu</th>
-                    <th>Quantité</th>
-                    <th>Taille</th>
-                    <th>Personnalisation</th>
-                    <th>Prix unitaire</th>
-                    <th>Total</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php $total = 0; ?>
-                <?php foreach ($commandes as $item): ?>
-                    <?php $sous_total = $item['quantite'] * $item['prix']; ?>
-                    <?php $total += $sous_total; ?>
-                    <tr>
-                        <td>
-                            <?php if (!empty($item['image'])): ?>
-                                <img src="uploads/<?= htmlspecialchars($item['image']) ?>" alt="Image Client" class="img-thumbnail" id="myImg">
-                            
-                                <?php else: ?>
-                                <span style="color:gray;">Aucune image</span>
-                            <?php endif; ?>
-                        </td>
-                        <td><?= htmlspecialchars($item['nom_modele']) ?></td>
-                        <td><img src="uploads/<?= htmlspecialchars($item['tissu']) ?>" alt="Image Client" class="img-thumbnail" id="myImg">
-                        </td>
-                        <td><?= $item['quantite'] ?></td>
-                        <td><?= htmlspecialchars($item['taille']) ?></td>
-                        <td><?= htmlspecialchars($item['personnalisation']) ?></td>
-                        <td><?= $item['prix'] ?> FCFA</td>
-                        <td><?= $sous_total ?> FCFA</td>
-                        
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-
-        <p class="total">Total : <?= $total ?> FCFA</p>
-
-        
-<div>
-     <?php
-        require 'config.php'; 
-        if (session_status() == PHP_SESSION_NONE) {
-  session_start();
-}
-        
-        $id_client = $_SESSION['id_client'] ?? null;
-
-        if ($id_client) {
-            $stmt = $pdo->prepare("
-                SELECT commande.id_commande, commande.statut_commande, livraison.statut_livraison 
-                FROM commande 
-                LEFT JOIN livraison ON commande.id_commande = livraison.id_commande 
-                WHERE commande.id_client = ?
-            ");
-            $stmt->execute([$id_client]);
-            $commandes = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            
-            foreach ($commandes as $cmd) {
-                $disable_button = ($cmd['statut_commande'] !== 'en attente' && $cmd['statut_livraison'] !== 'livrée');
-                ?>
-
-                <?php if ($disable_button): ?>
-    <p style="color: red;"> Vous pourrez supprimer cette commande uniquement une fois qu'elle sera livrée.</p>
+                <!-- Bouton supprimer -->
+<?php if ($statut_commande === 'en attente'): ?>
+<form method="POST" onsubmit="return confirm('Voulez-vous vraiment supprimer cette commande ?');">
+    <input type="hidden" name="delete_commande_id" value="<?= htmlspecialchars($commande['id_commande']) ?>">
+    <button type="submit" class="buttonn active-button">
+        Supprimer la commande
+    </button>
+</form>
 <?php endif; ?>
 
-<form method="POST" action="supprimer_commande.php" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette commande ?');">
-    <input type="hidden" name="delete_commande_id" value="<?= htmlspecialchars($cmd['id_commande']) ?>">
-    <button type="submit" class="buttonn <?= $disable_button ? 'disabled-button' : 'active-button' ?>" <?= $disable_button ? 'disabled' : '' ?>>Supprimer la commande pour passer une nouvelle commande</button>
-</form>
+            </div>
+        <?php endforeach; ?>
+    <?php endforeach; ?>
 
-                <?php
-            }
-        } 
-        ?>
-</div>
-
-
+    <div class="total-general">
+        Montant total général : <?= number_format($total_general, 0, ',', ' ') ?> FCFA
     </div>
-
 
 <?php else: ?>
     <div class="no-data">Aucune commande trouvée.</div>
-
-    <form  style="text-align:center;">
-    <button type="button" onclick="window.location.href='catalogue.php'" style="padding: 10px 20px; margin:50px; background-color:rgb(251, 107, 189); border: none; border-radius: 5px; color: white; font-size: 16px; cursor: pointer;">
-            Passer une  commande
+    <form style="text-align:center;">
+        <button type="button" onclick="window.location.href='catalogue.php'" style="padding: 10px 20px; margin:50px; background-color:rgb(251, 107, 189); border: none; border-radius: 5px; color: white; font-size: 16px; cursor: pointer;">
+            Passer une commande
         </button>
-        </form>
+    </form>
 <?php endif; ?>
+
 </div>
 
 

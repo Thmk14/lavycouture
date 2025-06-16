@@ -6,7 +6,18 @@ if (session_status() == PHP_SESSION_NONE) {
 
 require 'config.php';
 
-
+$id_client = $_SESSION['id'];
+        $query = "SELECT *
+                  FROM concerner c
+                  JOIN article art ON c.id_article = art.id_article
+                  JOIN commande cmd ON c.id_commande = cmd.id_commande
+                 JOIN mensuration m ON cmd.id_mensuration= m.id_mensuration
+                  WHERE cmd.id_client = ? AND cmd.etat_commande = 0
+  
+                  ";
+        $stmt = $pdo->prepare($query);
+        $stmt->execute([$id_client]);
+        $result = $stmt->fetchAll();
 
 ?>
 
@@ -231,7 +242,7 @@ require 'config.php';
 
 
 
-<?php if (!$_SESSION['id']): ?>
+<?php if (!$_SESSION['id'] || empty($result)): ?>
     <p style="text-align:center; color:#a72872; font-weight:bold;">Votre panier est vide.</p>
 <?php else: ?>
 <table>
@@ -252,25 +263,14 @@ require 'config.php';
     </thead>
     <tbody>
         <?php
-        $id_client = $_SESSION['id'];
-        $query = "SELECT *
-                  FROM concerner c
-                  JOIN article art ON c.id_article = art.id_article
-                  JOIN commande cmd ON c.id_commande = cmd.id_commande
-                 JOIN mensuration m ON cmd.id_mensuration= m.id_mensuration
-                  WHERE cmd.id_client = ?
-  
-                  ";
-        $stmt = $pdo->prepare($query);
-        $stmt->execute([$id_client]);
-        $result = $stmt->fetchAll();
+        
           $total = 0;
 
         foreach ($result as $row) {
             
             $total = $row['prix'] * $row['quantite'];
             echo "<tr>";
-            echo "<td><img src='images/{$row['image']}' style='height: 80px;'></td>";
+            echo "<td><img src='uploads/{$row['image']}' style='height: 80px;'  alt='Image Client' class='img-thumbnail' id='myImg'></td>";
             echo "<td>{$row['nom_modele']}</td>";
             echo "<td>{$row['prix']} FCFA</td>";
             echo "<td>{$row['quantite']}</td>";
@@ -282,7 +282,7 @@ require 'config.php';
             // Personnalisation
             echo "<td>" . (!empty($row['description_modele']) ? $row['description_modele'] : "Aucune") . "</td>";
 
-            echo "<td><img src='images/{".(!empty($row['tissu']) ? $row['tissu'] : "Aucun")." }' style='height: 80px;'> </td>";
+            echo "<td><img src='uploads/{".(!empty($row['tissu']) ? $row['tissu'] : "Aucun")." }' style='height: 80px;' alt='Image Client' class='img-thumbnail' id='myImg'> </td>";
 
         echo '<td><a href="listmesurec.php?id_commande=' . $row['id_commande'] . '" class="btn-mesures">Mensuration</a></td>';
   
@@ -290,7 +290,7 @@ require 'config.php';
            
 
             // Bouton supprimer
-            echo "<td><a href='supprimer_panier.php?id={$row['id_concerner']}' onclick='return confirm(\"Supprimer cet article ?\")'>Supprimer</a></td>";
+            echo "<td><a href='supprimer_panier.php?id={$row['id_concerner']}' onclick='return confirm(\"Supprimer cet article ?\")'><i class='fa-solid fa-trash'></i></a></td>";
 
             echo "</tr>";
         }

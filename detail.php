@@ -42,7 +42,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['add_to_cart'])) {
         $personnalisation_details = [];
 
         if (!empty($_POST['desc_personnalisation'])) {
-            $personnalisation_details[] = "Description: " . trim($_POST['desc_personnalisation']);
+            $personnalisation_details[] = trim($_POST['desc_personnalisation']);
         }
 
         $personnalisation = implode(" | ", $personnalisation_details);
@@ -83,14 +83,14 @@ else{
     
 }
     if ($taille === 'XS' || $taille === 'S' || $taille === 'M' || $taille === 'L' || $taille === 'XL') {
-        $stmt = $pdo->prepare("INSERT INTO mensuration (id_mensuration,taille_standard) VALUES (?,?)");
-        $stmt->execute([$id_mensuration,$taille]);
+        $stmt = $pdo->prepare("INSERT INTO mensuration (taille_standard) VALUES (?)");
+        $stmt->execute([ $taille]);
         $id_mensuration = $pdo->lastInsertId();
     }
 
     // Ajouter dans lien_commande_article
-    $stmt = $pdo->prepare("INSERT INTO commande (id_client,id_mensuration, quantite, description_modele, tissu, supplement_prix, montant_total) VALUES ( ?,?, ?, ?, ?, ?, ?)");
-    $stmt->execute([$id_client,$id_mensuration, $quantite, $personnalisation, $tissu, $supplement, $montant_total]);
+    $stmt = $pdo->prepare("INSERT INTO commande (id_client,id_mensuration, quantite, description_modele, tissu, supplement_prix, montant_total,etat_commande) VALUES ( ?,?,?, ?, ?, ?, ?, ?)");
+    $stmt->execute([$id_client,$id_mensuration, $quantite, $personnalisation, $tissu, $supplement, $montant_total,0]);
 
     $id_commande = $pdo->lastInsertId();
     $stmt = $pdo->prepare("INSERT INTO concerner (id_commande, id_article) VALUES ( ?, ?)");
