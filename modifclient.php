@@ -9,12 +9,13 @@
         $prenoms=$_POST["prenoms"];
        
         $telephone=$_POST["tel"];
+        $lieu=$_POST["lieu"];
         $requete="UPDATE client
                     SET nom=?,
                         prenom=?,
                        
                         telephone=?
-                        
+                        lieu_habitation=?
                     WHERE id_client=?";
         $prepare=$pdo->prepare($requete);
         $tab=[$nom,$prenoms,$telephone,$para];
@@ -23,7 +24,7 @@
          // Redirection après la modification
          if ($execute) {
             // Si l'exécution est réussie, redirige vers une autre page, par exemple `liste_clients.php`
-            header("Location: listclient.php");
+            header("Location: client_atelier.php");
             exit(); // N'oublie pas de mettre exit() après header pour arrêter le script ici.
         }
        
@@ -69,6 +70,8 @@
                 <input name="prenoms" type="text"  value="<?php echo $affiche["prenom"] ?>">
                 <label>Telephone</label>
                 <input type="tel" name="tel" id=""   value="<?php echo $affiche["telephone"] ?>">
+                <label>Lieu d'habitation</label>
+                <input type="tel" name="lieu" id=""   value="<?php echo $affiche["lieu_habitation"] ?>">
             
                 <button type="submit" name="register">Modifier</button>       
     </form>

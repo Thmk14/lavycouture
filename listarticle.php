@@ -1,7 +1,7 @@
 
 <?php
     include("config.php");
-    $requete="SELECT * FROM vetement";
+    $requete="SELECT * FROM article";
     $prepare=$pdo->prepare($requete);
     $execute=$prepare->execute();
     $affiche=$prepare->fetch(PDO::FETCH_ASSOC);
@@ -116,7 +116,7 @@
     </p>
 
 
-<button onclick="window.location.href='ajoutvet.php'"> <i class="fa-solid fa-plus"></i> </button>
+<button onclick="window.location.href='ajoutarticle.php'"> <i class="fa-solid fa-plus"></i> </button>
     
     
     <div class="table-responsive">
@@ -139,16 +139,16 @@
         ?>
         <tbody>
         <tr>
-            <td><?php echo $affiche["id_vetement"] ?></td>
+            <td><?php echo $affiche["id_article"] ?></td>
             <td><a href="javascript:void(0)"><img src="uploads/<?= htmlspecialchars($affiche['image']) ?>" alt="Image Client" class="img-thumbnail" id="myImg"></td>
            
             <td><?php echo $affiche["nom_modele"] ?></td>
-            <td><?php echo $affiche["categorie_personne"] ?></td>
+            <td><?php echo $affiche["categorie"] ?></td>
             <td><?php echo $affiche["description"] ?></td>
             <td><?php echo $affiche["prix"] ?></td>
 
-            <td><a href="modifvet.php?param=<?php echo $affiche["id_vetement"] ?>"><i class="fa-solid fa-pen-to-square"></i></a></td>
-            <td><a onclick="if(confirm('voulez vous supprimer ?')){}else{return false}" href="suppvet.php?param=<?php echo $affiche["id_vetement"] ?>"><i class="fa-solid fa-trash"></i></a></td>
+            <td><a href="modifarticle.php?param=<?php echo $affiche["id_article"] ?>"><i class="fa-solid fa-pen-to-square"></i></a></td>
+            <td><a onclick="if(confirm('voulez vous supprimer ?')){}else{return false}" href="suppvet.php?param=<?php echo $affiche["id_article"] ?>"><i class="fa-solid fa-trash"></i></a></td>
             
         </tr>
         </tbody>

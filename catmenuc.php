@@ -185,14 +185,14 @@
       <a href="couturier.php" class="active"><li>Tableau de bord Couturier</li></a>
       
       <a href="profil_personnel.php"><li>Mon profil</li></a>
-      <a href="listcomc.php"><li>Commandes</li></a>
-      <a href="listclientc.php"><li>Nos clients</li></a>
+      <a href="liste_couturier_commande.php"><li>Commandes</li></a>
+      <a href="client_atelier.php"><li>Nos clients</li></a>
       <a href="note_mesurec.php"><li>Liste des mesures</li></a>
       <a href="listcreate.php"><li>Créations des clients</li></a>
     </ul>
 
     <div class="logout">
-      <a href="logout.php"><i class="fas fa-sign-out-alt"></i> Déconnexion</a>
+      <a href="deconnexion.php"><i class="fas fa-sign-out-alt"></i> Déconnexion</a>
     </div>
   </div>
 

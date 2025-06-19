@@ -3,8 +3,8 @@
 session_start();
 require 'config.php';
 
-if (!isset($_SESSION['id_personnel'])) {
-  header('Location: personnelog.php');
+if (!isset($_SESSION['id'])) {
+  header('Location: connexion.php');
   exit();
 }
 ?>
@@ -27,12 +27,10 @@ if (!isset($_SESSION['id_personnel'])) {
     <h2>Bienvenue sur votre tableau de bord cher administrateur </h2>
 
     <div class="button-container">
-      <a href="listpers.php"><button>Liste du personnel</button></a>
      <a href="listclient.php"><button>Liste des clients</button></a>
-      <a href="listcom.php"><button>Liste des commandes</button></a>
-      <a href="listvet.php"><button>Liste des vêtements</button></a>
-      <a href="listcreate.php"><button>Liste des créations de nos clients</button></a>
-      <a href="listmesure.php"><button>Liste des mesures</button></a>
+      <a href="liste_admin_commande.php"><button>Liste des commandes</button></a>
+      <a href="listarticle.php"><button>Liste des vêtements</button></a>
+      
       
     </div>
   </div>

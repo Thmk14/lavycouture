@@ -15,37 +15,28 @@ if (!isset($pdo)) {
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['register'])) {
     $name = trim($_POST['name']);
     $lastname = trim($_POST['lastname']);
-    $email = trim($_POST['email']);
-    $password = trim($_POST['password']);
     $telephone = trim($_POST['telephone']);
+     $lieu = trim($_POST['lieu']);
 
-    if (!empty($name) && !empty($lastname) && !empty($email) && !empty($password) && !empty($telephone)) {
-        // Vérifier si l'email existe déjà
-        $checkEmail = $pdo->prepare("SELECT id_client FROM client WHERE email = ?");
-        $checkEmail->execute([$email]);
-
-        if ($checkEmail->rowCount() > 0) {
-            die("Cet email est déjà utilisé. Veuillez vous connecter.");
-        } else {
-            // Hasher le mot de passe
-            $hashed_password = password_hash($password, PASSWORD_BCRYPT);
-
-            $stmt = $pdo->prepare("INSERT INTO client (nom, prenom, email, mot_de_passe, telephone) VALUES (?, ?, ?, ?, ?)");
+    if (!empty($name) && !empty($lastname)  && !empty($telephone) && !empty($lieu)) {
+      
+        
+            $stmt = $pdo->prepare("INSERT INTO client (nom, prenom, telephone, lieu_habitation) VALUES ( ?, ?, ?, ?)");
             try {
-                $stmt->execute([$name, $lastname, $email, $hashed_password, $telephone]);
+                $stmt->execute([$name, $lastname,  $telephone, $lieu]);
 
                 // Récupérer l'ID du nouvel utilisateur pour le connecter immédiatement
                 $user_id = $pdo->lastInsertId();
-                $_SESSION['id_client'] = $user_id;
-                setcookie("id_client", $user_id, time() + (30 * 24 * 60 * 60), "/"); // Cookie 30 jours
+                $_SESSION['id'] = $user_id;
+                setcookie("id", $user_id, time() + (30 * 24 * 60 * 60), "/"); // Cookie 30 jours
 
                 $success_message = "Inscription réussie ! Vous êtes connecté.";
-                header("Location: listclient.php");
+                header("Location: client_atelier.php");
                 exit();
             } catch (PDOException $e) {
                 $error_message = "Erreur lors de l'inscription : " . $e->getMessage();
             }
-        }
+        
     } else {
         $error_message = "Veuillez remplir tous les champs.";
     }
@@ -73,9 +64,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['register'])) {
             <h2 class="h2">Ajouter client</h2>
             <input type="text" name="name" placeholder="Nom" required>
             <input type="text" name="lastname" placeholder="Prénom" required>
-            <input type="email" name="email" placeholder="Email" required>
-            <input type="password" name="password" placeholder="Mot de passe" required>
             <input type="text" name="telephone" placeholder="Téléphone" required>
+             <input type="text" name="lieu" placeholder="Lieu d'habitation" required>
             <button type="submit" name="register">Ajouter</button>
             
         </form>

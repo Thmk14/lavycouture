@@ -189,7 +189,7 @@
     </ul>
 
     <div class="logout">
-      <a href="logout.php"><i class="fas fa-sign-out-alt"></i> Déconnexion</a>
+      <a href="deconnexion.php"><i class="fas fa-sign-out-alt"></i> Déconnexion</a>
     </div>
   </div>
 

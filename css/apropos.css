@@ -1,143 +1,122 @@
-/*A propos*/
+* {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-*{
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    text-decoration: none;
-}
-.about{
-    
-    padding: 70px 15px;
-    display: flex;
-    margin: 150px 0;
-    justify-content: center;
-    align-items: center;
-    flex-direction: row;
+    body {
+      font-family: 'Inter', sans-serif;
+      line-height: 1.6;
+      background-color: #fcdbf1;
+      color: #333;
+    }
 
-}
+    .about {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 3rem;
+      padding: 6rem 2rem;
+      align-items: center;
+      margin-top: 4rem;
+    }
 
-.left{
-    max-width: 700px;
-    
-}
+    .left h3 {
+      font-size: 2.5rem;
+      color: #d30f8a;
+      margin-bottom: 1.5rem;
+      font-family: papyrus, sans-serif;
+    }
 
-.right{
-    max-width: 500px;
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    
+    .left h3 span {
+      color: #111;
+      
+      font-family: papyrus, sans-serif;
+    }
 
-    
-}
+    .left p {
+      font-size: 1.125rem;
+      margin-bottom: 1rem;
+    }
 
-p{
-    font-family: papyrus;
-    font-size: 30px;
-}
+    .right {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      justify-content: center;
+    }
 
-.icon{
-    
-    height: 200px;
-    width: 200px;
-    border-radius: 100px;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    margin: 0px 15px;   
-    background: rgb(248, 48, 185);
-    border-radius: 100%;
-    box-shadow: inset 7px 7px 14px rgb(193, 13, 130),
-            inset -7px -7px 14px rgb(239, 137, 200);
-    transition:0.2s;
-}
+    .icon {
+      height: 160px;
+      width: 160px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(145deg, #ff69e4, #ff85e5);
+      border-radius: 50%;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+    }
 
-.left h3{
-    font-size: 50px;
-    color: #89055f;
-    margin-bottom: 25px;
-    
-}
+    .icon:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+    }
 
-.icon:hover{
-    border-radius: 133px;
-    background:rgb(248, 48, 208);
-    box-shadow:  7px 7px 14px rgb(193, 13, 166),
-             -7px -7px 14px rgb(239, 137, 213);
-    cursor: pointer;
-}
+    .icon i {
+      font-size: 2rem;
+      color: #fff;
+      margin-bottom: 0.5rem;
+    }
 
+    .icon h4 {
+      font-size: 1.2rem;
+      color: #fff;
+      font-weight: 600;
+    }
 
+    .box {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      padding: 1.5rem;
+      margin: 2rem 2rem;
+      background-color: #fff;
+      border-radius: 12px;
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
+    }
 
-.pro i{
-    font-size: 50px;
-    color: aliceblue;
-   margin-bottom: 5px;
-}
+    .box .inc i {
+      font-size: 1.8rem;
+      color: #d30f8a;
+    }
 
-.pro .h4 {
-    font-size: 30px;
-    color: aliceblue;
-    font-family: papyrus;
-}
+    .box .text h3 {
+      font-size: 1.2rem;
+      margin-bottom: 0.25rem;
+      font-weight: 600;
+    }
 
-.pro{
-    margin: 60px;
-}
+    .box .text p {
+      font-size: 1rem;
+      color: #666;
+    }
 
-/* Media Queries pour très petits écrans */
-@media (max-width: 480px) {
+    @media (max-width: 768px) {
+      .about {
+        padding: 3rem 1rem;
+      }
 
+      .icon {
+        height: 140px;
+        width: 140px;
+      }
 
-p{
-    font-family: papyrus;
-    font-size: 19px;
-}
+      .icon i {
+        font-size: 1.5rem;
+      }
 
-.icon{
-    
-    height: 170px;
-    width: 170px;
-    border-radius: 100px;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    margin: 0px 10px;   
-    background: rgb(248, 48, 185);
-    border-radius: 100%;
-    box-shadow: inset 7px 7px 14px rgb(193, 13, 130),
-            inset -7px -7px 14px rgb(239, 137, 200);
-    transition:0.2s;
-}
-
-.left h3{
-    font-size: 30px;
-    color: #89055f;
-    margin-bottom: 25px;
-    
-}
-
-.icon:hover{
-    border-radius: 133px;
-    background:rgb(248, 48, 208);
-    box-shadow:  7px 7px 14px rgb(193, 13, 166),
-             -7px -7px 14px rgb(239, 137, 213);
-    cursor: pointer;
-}
-
-
-
-.pro i{
-    font-size: 30px;
-    color: aliceblue;
-  
-}
-
-.pro .h4 {
-    font-size: 20px;
-    color: aliceblue;
-    font-family: papyrus;
-}
-
-}
+      .icon h4 {
+        font-size: 1rem;
+      }
+    }

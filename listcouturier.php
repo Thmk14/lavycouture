@@ -1,18 +1,17 @@
 <?php
     require("config.php");
 
-    //  Récupérer tous les clients
-    $requeteClients = "SELECT * FROM client";
-    $prepareClients = $pdo->prepare($requeteClients);
-    $prepareClients->execute();
-    $clients = $prepareClients->fetchAll(PDO::FETCH_ASSOC);
+    $requeteCouturiers = "SELECT * FROM couturier";
+    $prepareCouturiers = $pdo->prepare($requeteCouturiers);
+    $prepareCouturiers->execute();
+    $couturiers = $prepareCouturiers->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Liste des clients</title>
+    <title>Liste des couturiers</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/bootstrap.min.css">
 
@@ -51,7 +50,12 @@
 
 <div class="content">
 
-    <h1>Nos clients</h1>
+    <h1>Nos couturiers</h1>
+
+    
+    <button onclick="window.location.href='ajoutcouturier.php'">
+        <i class="fa-solid fa-user-plus"></i> 
+    </button>
 
     <div class="table-responsive">
         <table class="table table-striped table-hover">
@@ -63,26 +67,22 @@
                     <th>Email</th>
                     <th>Mot de passe</th>
                     <th>Téléphone</th>
-                    <th>Pays</th>
-                    <th>Ville</th>
-                    <th>Lieu d'habitation</th>
+                   <th>Modifier</th>
                     <th>Supprimer</th>
                 </tr>
             </thead>
             <tbody>
-            <?php foreach ($clients as $client): ?>
+            <?php foreach ($couturiers as $couturier): ?>
                 <tr>
-                    <td><?= $client["id_client"] ?></td>
-                    <td><?= $client["nom"] ?></td>
-                    <td><?= $client["prenom"] ?></td>
-                    <td><?= $client["email"] ?></td>
-                    <td><?= $client["mot_de_passe"] ?></td>
-                    <td><?= $client["telephone"] ?></td>
-                    <td><?= $client["pays"] ?></td>
-                    <td><?= $client["ville"] ?></td>
-                    <td><?= $client["lieu_habitation"] ?></td>
+                    <td><?= $couturier["id_couturier"] ?></td>
+                    <td><?= $couturier["nom"] ?></td>
+                    <td><?= $couturier["prenom"] ?></td>
+                    <td><?= $couturier["email"] ?></td>
+                    <td><?= $couturier["mot_de_passe"] ?></td>
+                    <td><?= $couturier["telephone"] ?></td>
+                   <td><a href="modifcouturier.php?param=<?= $couturier["id_couturier"] ?>"><i class="fa-solid fa-pen-to-square"></i></a></td>
                     
-                    <td><a onclick="return confirm('Voulez-vous supprimer ce client ?');" href="supprclient.php?param=<?= $client["id_client"] ?>"><i class="fa-solid fa-trash"></i></a></td>
+                    <td><a onclick="return confirm('Voulez-vous supprimer ce couturier ?');" href="supprcouturier.php?param=<?= $couturier["id_couturier"] ?>"><i class="fa-solid fa-trash"></i></a></td>
                 </tr>
             <?php endforeach; ?>
             </tbody>

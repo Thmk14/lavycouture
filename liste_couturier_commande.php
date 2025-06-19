@@ -2,17 +2,17 @@
 require 'config.php';
 session_start();
 
-$sql = "SELECT 
-            c.nom, c.prenom, c.telephone, c.lieu_habitation,c.id_client,
-            cmd.id_commande, cmd.mode_paiement,  cmd.date_liv_souhait, cmd.date_commande, cmd.statut_commande,
-            v.nom_modele, v.image, v.prix, p.*
-        FROM commande cmd
-        JOIN client c ON cmd.id_client = c.id_client
-        JOIN panier p ON p.id_client = c.id_client
-        JOIN vetement v ON p.id_vetement = v.id_vetement
-        ORDER BY cmd.date_liv_souhait ASC";
+$id_client = $_SESSION['id'];
+$sql = "SELECT *
+                  FROM concerner c
+                  JOIN article art ON c.id_article = art.id_article
+                  JOIN commande cmd ON c.id_commande = cmd.id_commande
+                    JOIN client cl ON cmd.id_client = cl.id_client
+                 JOIN mensuration m ON cmd.id_mensuration= m.id_mensuration
+                  WHERE cmd.id_client = ? ";
+  
 $stmt = $pdo->prepare($sql);
-$stmt->execute();
+$stmt->execute([$id_client]);
 $commandes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
@@ -225,8 +225,14 @@ $commandes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <div class="main-content">
 <h1>Commandes en attente de confection</h1>
 
+
+
+
 <?php
-if (count($commandes) > 0):
+if (count($commandes) > 0): ?>
+
+<h3>Client: <?= ($commandes[0]['prenom'] . ' ' . $commandes[0]['nom']) ?></h3>
+   <?php 
     $grouped = [];
     foreach ($commandes as $cmd) {
         $key = $cmd['id_client'] . '_' . $cmd['id_commande'];
@@ -235,37 +241,39 @@ if (count($commandes) > 0):
             'image' => $cmd['image'],
             'nom_modele' => $cmd['nom_modele'],
             'quantite' => $cmd['quantite'],
-            'taille' => $cmd['taille'],
+            'taille_standard' => $cmd['taille_standard'],
             'tissu' => $cmd['tissu'],
-            'personnalisation' => $cmd['personnalisation'],
-            'prix' => $cmd['prix']
+            'description_modele' => $cmd['description_modele'],
+            'prix' => $cmd['prix'],
+            'id_commande' => $cmd['id_commande']
+
         ];
     }
 
     foreach ($grouped as $key => $commande):
         $client = $commande['client'];
 ?>
+
 <div class="div">
-<h3>Client: <?= htmlspecialchars($client['prenom'] . ' ' . $client['nom']) ?></h3>
 <table>
     <tr>
         <th>Commande</th>
-        <th>Client</th>
         <th>Adresse</th>
         <th>Téléphone</th>
         <th>Statut</th>
         <th>Date commande</th>
         <th>Date Livraison souhaitée</th>
+        
         <th>Actions</th>
     </tr>
     <tr>
         <td>#<?= $client['id_commande'] ?></td>
-        <td><?= htmlspecialchars($client['prenom'] . ' ' . $client['nom']) ?></td>
-        <td><?= htmlspecialchars($client['lieu_habitation']) ?></td>
-        <td><?= htmlspecialchars($client['telephone']) ?></td>
-        <td><?= htmlspecialchars($client['statut_commande']) ?></td>
-        <td><?= htmlspecialchars($client['date_commande']) ?></td>
-        <td><?= htmlspecialchars($client['date_liv_souhait']) ?></td>
+     
+        <td><?= ($client['lieu_habitation']) ?></td>
+        <td><?= ($client['telephone']) ?></td>
+        <td><?= ($client['statut']) ?></td>
+        <td><?= ($client['date_commande']) ?></td>
+        <td><?= ($client['date_livraison']) ?></td>
         <td>
             <form method="POST" action="marquer_prete.php">
                 <input type="hidden" name="id_commande" value="<?= $client['id_commande'] ?>">
@@ -273,10 +281,7 @@ if (count($commandes) > 0):
                 <button class="btn btn-annuler" name="action" value="en préparation">En préparation</button>
                 <button class="btn btn-prete" name="action" value="prête">Prête</button>
             </form>
-            <form method="GET" action="listmesurec.php" style="margin-top:10px;">
-                <input type="hidden" name="id_client" value="<?= $client['id_client'] ?>">
-                <button type="submit" class="btn btn-prete" style="background-color: #a72872;">Mesures</button>
-            </form>
+            
         </td>
     </tr>
 </table>
@@ -291,6 +296,7 @@ if (count($commandes) > 0):
             <th>Personnalisation</th>
             <th>Prix unitaire</th>
             <th>Total</th>
+            <th>Mensurations</th>
         </tr>
     </thead>
     <tbody>
@@ -306,12 +312,18 @@ if (count($commandes) > 0):
                     <?php endif; ?>
                 </td>
                 <td><?= htmlspecialchars($item['nom_modele']) ?></td>
-                <td><img src="uploads/<?= htmlspecialchars($item['tissu']) ?>" alt="Tissu" class="img-thumbnail"></td>
+                <td><img src="uploads/<?= ($item['tissu']) ?>" alt="Tissu" class="img-thumbnail"></td>
                 <td><?= $item['quantite'] ?></td>
-                <td><?= htmlspecialchars($item['taille']) ?></td>
-                <td><?= htmlspecialchars($item['personnalisation']) ?></td>
+                <td><?= ($item['taille_standard']) ?></td>
+                <td><?= ($item['description_modele']) ?></td>
                 <td><?= $item['prix'] ?> FCFA</td>
                 <td><?= $sous_total ?> FCFA</td>
+             <td>
+  <a href="listmesurec.php?id_commande=<?= htmlspecialchars($item['id_commande']) ?>" class="btn btn-prete">
+    Mensuration
+  </a>
+</td>
+
             </tr>
         <?php endforeach; ?>
     </tbody>

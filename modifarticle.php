@@ -11,7 +11,7 @@ if (!$para) {
 // Traitement du formulaire
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $name = $_POST["nom_modele"];
-    $categorie = $_POST["categorie_personne"];
+    $categorie = $_POST["categorie"];
     $description = $_POST["description"];
     $prix = $_POST["prix"];
     $ancienneImage = $_POST["ancienne_image"];
@@ -41,12 +41,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 
     // Mise à jour dans la base
-    $requete = "UPDATE vetement SET nom_modele=?, categorie_personne=?, prix=?, image=?, description=? WHERE id_vetement=?";
+    $requete = "UPDATE article SET nom_modele=?, categorie=?, prix=?, image=?, description=? WHERE id_article=?";
     $prepare = $pdo->prepare($requete);
     $execute = $prepare->execute([$name, $categorie, $prix, $newImageName, $description, $para]);
 
     if ($execute) {
-        header("Location: listvet.php");
+        header("Location: listarticle.php");
         exit();
     } else {
         echo "Erreur lors de la mise à jour du produit.";
@@ -54,7 +54,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 }
 
 // Récupération des infos existantes
-$requete = "SELECT * FROM vetement WHERE id_vetement=?";
+$requete = "SELECT * FROM article WHERE id_article=?";
 $prepare = $pdo->prepare($requete);
 $prepare->execute([$para]);
 $affiche = $prepare->fetch(PDO::FETCH_ASSOC);
@@ -89,7 +89,7 @@ if (!$affiche) {
         <input name="nom_modele" type="text" value="<?= htmlspecialchars($affiche["nom_modele"]) ?>" required>
 
         <label>Catégorie personne</label>
-        <input type="text" name="categorie_personne" value="<?= htmlspecialchars($affiche["categorie_personne"]) ?>" required>
+        <input type="text" name="categorie" value="<?= htmlspecialchars($affiche["categorie"]) ?>" required>
 
         <label>Prix</label>
         <input name="prix" type="number" value="<?= htmlspecialchars($affiche["prix"]) ?>" min="0" required>

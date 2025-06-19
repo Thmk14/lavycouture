@@ -16,18 +16,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["name"]) && isset($_FI
     $ext = strtolower(pathinfo($imageName, PATHINFO_EXTENSION));
 
     if (in_array($ext, $allowed) && $error === 0) {
-        $newImageName = uniqid("vetement_", true) . "." . $ext;
+        $newImageName = uniqid("article_", true) . "." . $ext;
         $uploadPath = "uploads/" . $newImageName;
 
         if (move_uploaded_file($tmpName, $uploadPath)) {
             // Insertion dans la base
-            $requete = "INSERT INTO vetement (nom_modele, categorie_personne, description, prix, image) VALUES (?, ?, ?, ?, ?)";
+            $requete = "INSERT INTO article (nom_modele, categorie, description, prix, image) VALUES (?, ?, ?, ?, ?)";
             $prepare = $pdo->prepare($requete);
             $tab = [$name, $categorie, $description, $prix, $newImageName];
             $execute = $prepare->execute($tab);
 
             if ($execute) {
-                header("Location: listvet.php");
+                header("Location: listarticle.php");
                 exit();
             } else {
                 echo "Erreur lors de l'ajout du vêtement.";
@@ -56,10 +56,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["name"]) && isset($_FI
 <div class="container">
     <div class="form-box active" id="register-form">
         <form method="POST" enctype="multipart/form-data">
-            <h2 class="h2">Ajout de produit (vêtement)</h2>
+            <h2 class="h2">Ajout d'article</h2>
 
             <input type="text" name="name" placeholder="Nom du modèle" required>
-            <input type="text" name="categorie" placeholder="Catégorie personne" required>
+            <input type="text" name="categorie" placeholder="Catégorie de personne" required>
             <input type="text" name="description" placeholder="Description" required>
             <input type="number" name="prix" placeholder="Prix" required>
             <input type="file" name="image" id="image" accept="image/*" required>

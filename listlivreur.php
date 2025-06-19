@@ -1,23 +1,22 @@
 <?php
     require("config.php");
 
-    //  Récupérer tous les clients
-    $requeteClients = "SELECT * FROM client";
-    $prepareClients = $pdo->prepare($requeteClients);
-    $prepareClients->execute();
-    $clients = $prepareClients->fetchAll(PDO::FETCH_ASSOC);
+    $requeteLivreurs = "SELECT * FROM livreur";
+    $prepareLivreurs = $pdo->prepare($requeteLivreurs);
+    $prepareLivreurs->execute();
+    $livreurs = $prepareLivreurs->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Liste des clients</title>
+    <title>Liste des livreurs</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/bootstrap.min.css">
 
     <style>
-        
+       
 
         .fa-solid {
             width: 40px;
@@ -35,7 +34,7 @@
             background-color: rgb(191, 89, 162);
             color: white;
         }
-        h1 {
+        h1{
             text-align: center;
             color: #a72872;
             font-size: 50px;
@@ -47,16 +46,16 @@
 </head>
 <body>
 
-<?php include 'catmenuc.php'; ?>
+<?php include 'catmenu.php'; ?>
 
 <div class="content">
 
-    <h1>Nos clients</h1>
+    <h1>Nos livreurs</h1>
 
-    <button onclick="window.location.href='ajoutclient.php'">
+    
+    <button onclick="window.location.href='ajoutlivreur.php'">
         <i class="fa-solid fa-user-plus"></i> 
     </button>
-
     <div class="table-responsive">
         <table class="table table-striped table-hover">
             <thead>
@@ -67,23 +66,22 @@
                     <th>Email</th>
                     <th>Mot de passe</th>
                     <th>Téléphone</th>
-                    <th>Lieu d'habitation</th>
                     <th>Modifier</th>
                     <th>Supprimer</th>
                 </tr>
             </thead>
             <tbody>
-            <?php foreach ($clients as $client): ?>
+            <?php foreach ($livreurs as $livreur): ?>
                 <tr>
-                    <td><?= $client["id_client"] ?></td>
-                    <td><?= $client["nom"] ?></td>
-                    <td><?= $client["prenom"] ?></td>
-                    <td><?= $client["email"] ?></td>
-                    <td><?= $client["mot_de_passe"] ?></td>
-                    <td><?= $client["telephone"] ?></td>
-                    <td><?= $client["lieu_habitation"] ?></td>
-                    <td><a href="modifclient.php?param=<?= $client["id_client"] ?>"><i class="fa-solid fa-pen-to-square"></i></a></td>
-                    <td><a onclick="return confirm('Voulez-vous supprimer ce client ?');" href="supprclient.php?param=<?= $client["id_client"] ?>"><i class="fa-solid fa-trash"></i></a></td>
+                    <td><?= $livreur["id_livreur"] ?></td>
+                    <td><?= $livreur["nom"] ?></td>
+                    <td><?= $livreur["prenom"] ?></td>
+                    <td><?= $livreur["email"] ?></td>
+                    <td><?= $livreur["mot_de_passe"] ?></td>
+                    <td><?= $livreur["telephone"] ?></td>
+                    <td><a href="modiflivreur.php?param=<?= $livreur["id_livreur"] ?>"><i class="fa-solid fa-pen-to-square"></i></a></td>
+                    
+                    <td><a onclick="return confirm('Voulez-vous supprimer ce livreur ?');" href="supprlivreur.php?param=<?= $livreur["id_livreur"] ?>"><i class="fa-solid fa-trash"></i></a></td>
                 </tr>
             <?php endforeach; ?>
             </tbody>

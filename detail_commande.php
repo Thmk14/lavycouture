@@ -18,11 +18,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_commande_id'])
     $commande_id = $_POST['delete_commande_id'];
 
     // Vérification du statut de la commande
-    $stmt_status = $pdo->prepare("SELECT statut_commande FROM commande WHERE id_commande = ?");
+    $stmt_status = $pdo->prepare("SELECT statut FROM commande WHERE id_commande = ?");
     $stmt_status->execute([$commande_id]);
     $status = $stmt_status->fetch(PDO::FETCH_ASSOC);
 
-    if ($status && $status['statut_commande'] === 'en attente') {
+    if ($status && $status['statut'] === 'En attente') {
         try {
             $pdo->beginTransaction();
 
@@ -85,8 +85,7 @@ foreach ($commandes as $cmd) {
         'mode_paiement' => $cmd['mode_paiement'],
         'montant_total' => $cmd['montant_total'],
         'date_commande' => $cmd['date_commande'],
-        'statut_commande' => $cmd['statut_commande'],
-        'statut_livraison' => $cmd['statut_livraison'],
+        'statut' => $cmd['statut'],
         'date_livraison' => $cmd['date_livraison'],
         'articles' => [
             [
@@ -130,7 +129,7 @@ body {
 h1 {
     text-align: center;
     color: #a72872;
-    margin: 150px 0 30px;
+    margin: 180px 0 30px;
     font-size: 2.5rem;
 }
 
@@ -209,6 +208,27 @@ img {
 .active-button {
     background-color: rgba(241, 98, 186, 0.75);
     color: black;
+}
+
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color:rgb(234, 8, 185); /* Bleu bootstrap */
+    border-radius: 5px;
+    border: none;
+    transition: background-color 0.3s ease;
+    margin-left: 80px;
+}
+
+.btn:hover {
+    background-color:rgb(179, 0, 134); /* Bleu plus foncé */
+}
+
+.btn a{
+    text-decoration: none;
+    color: white;
+     font-weight: bold;
+     font-size: 20px;
 }
 
 /* ========= Status Tags ========= */
@@ -336,10 +356,13 @@ form button {
     color: #bbb;
 }
 
+
+
 /* ========= Responsive ========= */
 @media (max-width: 992px) {
     h1 {
         font-size: 2rem;
+        margin: 180px 0 30px;
     }
 
     .commande-block {
@@ -363,7 +386,7 @@ form button {
 @media (max-width: 576px) {
     h1 {
         font-size: 1.5rem;
-        margin-top: 100px;
+        margin-top: 180px;
     }
 
     .buttonn {
@@ -401,14 +424,18 @@ form button {
 <?php include 'menu.php'; ?>
 <div class="main-content">
 
+
 <?php
 $total_general = 0;
 
 if (count($commandes) > 0):
     foreach ($grouped as $client_id => $data): ?>
         <h1>Mes informations</h1>
+
+        <button class="btn"><a href="historique" >Historique</a></button>
         <div class="commande-block">
             <p><strong>Nom et prénom :</strong> <?= htmlspecialchars($data['client']['nom'] . ' ' . $data['client']['prenom']) ?></p>
+            
             <p><strong>Email :</strong> <?= htmlspecialchars($data['client']['email']) ?></p>
             <p><strong>Téléphone :</strong> <?= htmlspecialchars($data['client']['telephone']) ?></p>
             <p><strong>Pays :</strong> <?= htmlspecialchars($data['client']['pays']) ?></p>
@@ -424,8 +451,8 @@ if (count($commandes) > 0):
                 
     <p><strong>Statut commande :</strong>
 <?php
-$statut_commande = strtolower($commande['statut_commande'] ?? 'en attente');
-echo match($statut_commande) {
+$statut = strtolower($commande['statut'] ?? 'en attente');
+echo match($statut) {
     'en route' => "<span class='status en-route' data-base='En route'>En route 🚚</span>",
     'récupération du colis' => "<span class='status en-retrait' data-base='Récupération du colis'>Récupération du colis 📦</span>",
     'livrée' => "<span class='status en-livree'>Livrée ✅</span>",
@@ -435,17 +462,7 @@ echo match($statut_commande) {
 ?>
 </p>
 
-<p><strong>Statut livraison :</strong>
-<?php 
-    $statut_livraison = $commande['statut_livraison'] ?? 'En attente';
-    echo match($statut_livraison) {
-        'en route' => "<span class='status en-route' data-base='En route'>En route</span> 🚚",
-        'récupération du colis' => "<span class='status en-retrait' data-base='Récupération du colis'>Récupération du colis</span>📦",
-        'livrée' => "<span class='status en-livree'>Livrée ✅</span>",
-        default => "<span class='status unknown' data-base='En attente'>En attente</span>⏳"
-    };
-?>
-</p>
+
                 <table>
                     <thead>
                         <tr>
@@ -483,7 +500,7 @@ echo match($statut_commande) {
                 <?php $total_general += $total_commande; ?>
 
                 <!-- Bouton supprimer -->
-<?php if ($statut_commande === 'en attente'): ?>
+<?php if ($statut === 'en attente'): ?>
 <form method="POST" onsubmit="return confirm('Voulez-vous vraiment supprimer cette commande ?');">
     <input type="hidden" name="delete_commande_id" value="<?= htmlspecialchars($commande['id_commande']) ?>">
     <button type="submit" class="buttonn active-button">

@@ -1,5 +1,12 @@
 <?php
+// === SESSION PERSISTANTE (1 AN) ===
+$one_year = 365 * 24 * 60 * 60; // 1 an en secondes
+ini_set('session.gc_maxlifetime', $one_year);
+session_set_cookie_params($one_year);
+
+// Démarrer la session
 session_start();
+
 require 'config.php';
 
 $error = "";
@@ -35,18 +42,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['register'])) {
         $error = "Veuillez remplir tous les champs.";
     }
 }
+
 // ===== CONNEXION MULTI-TABLES =====
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
     $email = trim($_POST['email']);
     $mot_de_passe = trim($_POST['mot_de_passe']);
 
     if ($email && $mot_de_passe) {
-        // Liste des rôles avec leurs redirections
         $roles = [
             'client' => ['table' => 'client', 'id_field' => 'id_client', 'redirect' => 'index.php'],
-            'couturier' => ['table' => 'couturier', 'id_field' => 'id_couturier', 'redirect' => 'couturier/dashboard.php'],
-            'livreur' => ['table' => 'livreur', 'id_field' => 'id_livreur', 'redirect' => 'livreur/dashboard.php'],
-            'administrateur' => ['table' => 'administrateur', 'id_field' => 'id_admin', 'redirect' => 'admin/dashboard.php']
+            'couturier' => ['table' => 'couturier', 'id_field' => 'id_couturier', 'redirect' => 'dashboard_couturier.php'],
+            'livreur' => ['table' => 'livreur', 'id_field' => 'id_livreur', 'redirect' => 'dashboard_livreur.php'],
+            'administrateur' => ['table' => 'administrateur', 'id_field' => 'id_admin', 'redirect' => 'admin.php']
         ];
 
         foreach ($roles as $role => $data) {
@@ -55,6 +62,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
             $user = $stmt->fetch();
 
             if ($user && password_verify($mot_de_passe, $user['mot_de_passe'])) {
+                session_regenerate_id(true); // Sécurité
+
                 $_SESSION['id'] = $user[$data['id_field']];
                 $_SESSION['nom'] = $user['nom'];
                 $_SESSION['type_utilisateur'] = $role;
@@ -69,8 +78,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
         $error = "Veuillez remplir tous les champs.";
     }
 }
-
 ?>
+
 
 
 

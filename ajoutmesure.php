@@ -7,7 +7,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $prenom = $_POST['prenom'];
     $tel= $_POST['tel'];
     $hbt = $_POST['hbt'];
-    $lieu_prise = $_POST['lieu_prise'];
     $taille = $_POST['taille'];
     $poitrine = $_POST['poitrine'];
     $hanche = $_POST['hanche'];
@@ -26,7 +25,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $pdo->beginTransaction();
 
         // 1. Insertion dans client
-        $insertClient = $pdo->prepare("INSERT INTO client (nom, prenom, telephone, lieu_habitation) VALUES (?, ?,?,?)");
+        $insertClient = $pdo->prepare("INSERT INTO client (nom, prenom, telephone, lieu_habitation) VALUES (?, ?,?,?) WHERE email IS NULL AND mot_de_passe IS NULL");
         $insertClient->execute([$nom,$prenom,$tel,$hbt]);
 
         // Récupérer l'ID du client inséré
@@ -36,13 +35,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $insertMensuration = $pdo->prepare("INSERT INTO mensuration (
             tour_taille, tour_poitrine, tour_hanche, taille_buste, longueur_bras, tour_bras,
             longueur_jambe, tour_cuisse, tour_cou, longueur_epaule, longueur_entrejambe,
-            longueur_total, lieu_prise, id_client
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            longueur_total
+        ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
         $insertMensuration->execute([
             $taille, $poitrine, $hanche, $taille_de_buste, $bras, $tbras,
             $longueur_jambe, $cuisse, $cou, $epaule, $entrejambe,
-            $total, $lieu_prise, $id_client
+            $total
         ]);
 
         // Valider la transaction
@@ -147,13 +146,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         <input type="text" id="hbt" name="hbt" placeholder="Lieu d'habitation" required>
 
-
-        <label for="lieu_prise">Lieu de prise</label>
-        <select name="lieu_prise" id="">
-            <option value="Via l'application">Via l'application</option>
-            <option value="A l'atelier">A l'atelier</option>
-        </select>
-        
 
         <label for="taille">Tour de taille (cm)</label>
         <input type="number" id="taille" name="taille" required>

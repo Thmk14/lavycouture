@@ -5,6 +5,9 @@ require('session.php'); // Gérer la session utilisateur
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
+
+$current_page = basename($_SERVER['PHP_SELF']);
+
 $isLoggedIn = isset($_SESSION['id']);
 
 /*function hasDeliveredOrders($pdo, $id_client) {
@@ -17,17 +20,13 @@ $isLoggedIn = isset($_SESSION['id']);
     return $stmt->fetchColumn() > 0;
 }*/
 
-/*function getPanierCount($pdo, $id_client) {
-    $stmt = $pdo->prepare("SELECT panier_lock FROM client WHERE id_client = ?");
-    $stmt->execute([$id_client]);
-    $lock = $stmt->fetchColumn();
+function getPanierCount($pdo, $id_client) {
+    
 
-    if ($lock == 1) return 0;
-
-    $stmt = $pdo->prepare("SELECT SUM(quantite) FROM panier WHERE id_client = ?");
+    $stmt = $pdo->prepare("SELECT SUM(quantite) FROM commande WHERE id_client = ?");
     $stmt->execute([$id_client]);
     return $stmt->fetchColumn() ?? 0;
-}*/
+}
 ?>
 
 <!DOCTYPE html>
@@ -36,9 +35,9 @@ $isLoggedIn = isset($_SESSION['id']);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LAVY COUTURE</title>
-    <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css" integrity="sha512-5Hs3dF2AEPkpNAR7UiOHba+lRSJNeM2ECkwxUIxC1Q/FLycGTbNapWXB4tP889k5T5Ju8fs4b1P5z/iB4nMfSQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-     
+    <link rel="stylesheet" href="css/style.css">
+
 </head>
 <body>
     
@@ -46,36 +45,36 @@ $isLoggedIn = isset($_SESSION['id']);
         <img class="logo" src="img/lavy.jpg">
         <nav class="nav-links">
             <ul>
-                <li><a href="index.php">Accueil</a></li>
-                <li><a href="catalogue.php">Catalogue</a></li>
-                <li><a href="create.php">Créer votre modèle</a></li>
-                <li><a href="apropos.php">À propos</a></li>
-                <!--li>
-                   <a href="detail_commande.php" class="<--?= (isset($_SESSION['id_client']) && hasDeliveredOrders($pdo, $_SESSION['id_client'])) ? 'highlighted-command' : '' ?>">
-                       Mes commandes
-                   </a>
-               </-li -->
+                <li><a href="index.php" class="<?= $current_page == 'index.php' ? 'active' : '' ?>">Accueil</a></li>
+            <li><a href="catalogue.php" class="<?= $current_page == 'catalogue.php' ? 'active' : '' ?>">Catalogue</a></li>
+            <li><a href="create.php" class="<?= $current_page == 'create.php' ? 'active' : '' ?>">Créer votre modèle</a></li>
+            <li><a href="apropos.php" class="<?= $current_page == 'apropos.php' ? 'active' : '' ?>">À propos</a></li>
+            <li>
+                <a href="detail_commande.php" class="<?= $current_page == 'detail_commande.php' ? 'active' : '' ?>" >
+                    Mes commandes
+                </a>
+            </li>
+            <li><a href="contact.php" class="<?= $current_page == 'contact.php' ? 'active' : '' ?>">Contact</a></li>
+            <li><a href="faq.php" class="<?= $current_page == 'faq.php' ? 'active' : '' ?>">FAQ</a></li>
 
-                <li><a href="contact.php">Contact</a></li>
-                <li><a href="chatbot.php">FAQ</a></li>
 
-                <!--?php if ($isLoggedIn): ?>
+                <?php if ($isLoggedIn): ?>
                     <li>
                         <a href="panier.php" class="cart-icon">
                             <i class="fas fa-shopping-cart"></i>
                             <span class="cart-count">
-                                <--?= (isset($_SESSION['panier_lock']) && $_SESSION['panier_lock']) ? 0 : (isset($_SESSION['id_client']) ? getPanierCount($pdo, $_SESSION['id_client']) : 0) ?>
+                                <?=  (isset($_SESSION['id']) ? getPanierCount($pdo, $_SESSION['id']) : 0) ?>
                             </span>
                         </a>
                     </li>
-                <!?php else: ?>
+                <?php else: ?>
                     <li>
                         <a href="connexion.php" class="cart-icon">
                             <i class="fas fa-shopping-cart"></i>
                             <span class="cart-count">0</span>
                         </a>
                     </li>
-                <!?php endif; ?-->
+                <?php endif; ?>
 
                 <?php if ($isLoggedIn): ?>
                     <li><button class="button1"><i class="fas fa-sign-out-alt"></i><a href="deconnexion.php">Déconnexion</a> </button></a></li>
@@ -93,9 +92,9 @@ $isLoggedIn = isset($_SESSION['id']);
 
             </ul>
         </nav>
-        <!--a href="#" class="menu-hamburger <!?= ($isLoggedIn && hasDeliveredOrders($pdo, $_SESSION['id_client'])) ? 'has-alert' : '' ?>">
+        <a href="#" class="menu-hamburger <!?= ($isLoggedIn && hasDeliveredOrders($pdo, $_SESSION['id'])) ? 'has-alert' : '' ?>">
         <i class="fa-solid fa-bars"></i>
-    </!--a-->
+    </a>
 </header>
 
     <script src="js/menu.js">
@@ -115,8 +114,10 @@ $isLoggedIn = isset($_SESSION['id']);
             <h1>Bienvenue chez LAVY COUTURE</h1>
             <button class="button2"><a href="apropos.php">En savoir plus sur nous</a></button>
         </div>
+        
     </div>
 
+    
 
     <section class="catalogue">
         <h1 class="h1">Nos produits</h1>

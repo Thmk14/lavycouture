@@ -5,8 +5,8 @@ if (session_status() == PHP_SESSION_NONE) {
 
 
 require 'config.php';
-
 $id_client = $_SESSION['id'];
+
         $query = "SELECT *
                   FROM concerner c
                   JOIN article art ON c.id_article = art.id_article
@@ -270,7 +270,7 @@ $id_client = $_SESSION['id'];
             
             $total = $row['prix'] * $row['quantite'];
             echo "<tr>";
-            echo "<td><img src='uploads/{$row['image']}' style='height: 80px;'  alt='Image Client' class='img-thumbnail' id='myImg'></td>";
+            echo "<td><img src='uploads/{$row['image']}' style='height: 80px;'  alt='Image Client' class='img-thumbnail' id='myImg'></td>";     
             echo "<td>{$row['nom_modele']}</td>";
             echo "<td>{$row['prix']} FCFA</td>";
             echo "<td>{$row['quantite']}</td>";
@@ -281,10 +281,11 @@ $id_client = $_SESSION['id'];
 
             // Personnalisation
             echo "<td>" . (!empty($row['description_modele']) ? $row['description_modele'] : "Aucune") . "</td>";
+            
+$tissu = !empty($row['tissu']) ? $row['tissu'] : 'Aucun'; // une image par défaut dans 'uploads/'
+echo "<td><img src='uploads/$tissu' style='height: 80px;' alt='Image Client' class='img-thumbnail' id='myImg'> </td>";
 
-            echo "<td><img src='uploads/{".(!empty($row['tissu']) ? $row['tissu'] : "Aucun")." }' style='height: 80px;' alt='Image Client' class='img-thumbnail' id='myImg'> </td>";
-
-        echo '<td><a href="listmesurec.php?id_commande=' . $row['id_commande'] . '" class="btn-mesures">Mensuration</a></td>';
+        echo '<td><a class="btn" href="listmesurec.php?id_commande=' . $row['id_commande'] . '" class="btn-mesures">Mensuration</a></td>';
   
              echo "<td>$total FCFA</td>";
            
