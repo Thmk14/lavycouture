@@ -12,16 +12,17 @@ if (!isset($_SESSION['id'])) {
     exit;
 }
 
+
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     // Validation et assainissement des données
-    $tel = filter_var($_POST['tel'], FILTER_SANITIZE_STRING);
-    $mode = filter_var($_POST['mode'], FILTER_SANITIZE_STRING);
-    $montant_total = isset($_POST['montant']) ? filter_var($_POST['montant'], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION) : 0;
-    $pays = filter_var($_POST['pays'], FILTER_SANITIZE_STRING);
-    $ville = filter_var($_POST['ville'], FILTER_SANITIZE_STRING);
-    $lieu = filter_var($_POST['lieu'], FILTER_SANITIZE_STRING);
-    $date = filter_var($_POST['date'], FILTER_SANITIZE_STRING);
-
+    $tel = trim($_POST['tel']);
+    $mode = trim($_POST['mode']);
+    $montant_total = trim($_POST['montant']) ?? 0;
+    $pays = trim($_POST['pays']);
+    $ville = trim($_POST['ville']);
+    $lieu = trim($_POST['lieu']);
+    $date = trim($_POST['date'] );
+     $statut = 'Validée';
     // Vérification des champs obligatoires
     if (empty($tel) || empty($mode) || empty($pays) || empty($ville) || empty($lieu) || empty($date)) {
         echo "<p style='color:red;'>❌ Tous les champs sont obligatoires.</p>";
@@ -38,10 +39,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $stmt = $pdo->prepare($sqlUpdate);
         $stmt->execute([$pays, $ville, $lieu, $tel, $idClient]);
 
+        
         // Insertion de la commande
-        $sqlCommande = "UPDATE commande SET etat_commande= ?, mode_paiement=?, date_commande=?, montant_total=? WHERE id_client = ?";
+        $sqlCommande = "UPDATE commande SET etat_commande= ?,statut=?, mode_paiement=?, date_commande=?, montant_total=? WHERE id_client = ?";
         $stmt = $pdo->prepare($sqlCommande);
-        $stmt->execute([1, $mode, $date, $montant_total, $idClient]);
+        $stmt->execute([1,$statut, $mode, $date, $montant_total, $idClient]);
 
         $pdo->commit();
 
@@ -312,7 +314,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                   JOIN article art ON c.id_article = art.id_article
                   JOIN commande cmd ON c.id_commande = cmd.id_commande
                  JOIN mensuration m ON cmd.id_mensuration= m.id_mensuration
-                  WHERE cmd.id_client = ?
+                  WHERE cmd.id_client = ? AND cmd.statut = 'En attente'
   
                   ";
         $stmt = $pdo->prepare($query);

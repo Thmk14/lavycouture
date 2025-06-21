@@ -27,10 +27,12 @@ if (!isset($_SESSION['id'])) {
     <h2>Bienvenue sur votre tableau de bord cher administrateur </h2>
 
     <div class="button-container">
-     <a href="listclient.php"><button>Liste des clients</button></a>
       <a href="liste_admin_commande.php"><button>Liste des commandes</button></a>
       <a href="listarticle.php"><button>Liste des vêtements</button></a>
-      
+      <a href="listclient.php"><button>Liste clients</button></a>
+      <a href="listcouturier.php"><button>Liste couturiers</button></a>
+      <a href="listlivreur.php"><button>Liste livreurs</button></a>
+      <a href="listarticle.php"><button>Liste vêtements</button></a>
       
     </div>
   </div>

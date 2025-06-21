@@ -22,8 +22,8 @@ $isLoggedIn = isset($_SESSION['id']);
 
 function getPanierCount($pdo, $id_client) {
    
-    $stmt = $pdo->prepare("SELECT SUM(quantite) FROM commande WHERE id_client = ?");
-    $stmt->execute([$id_client]);
+    $stmt = $pdo->prepare("SELECT SUM(quantite) FROM commande WHERE id_client = ? AND statut = ?");
+    $stmt->execute([$id_client,'En attente']);
     return $stmt->fetchColumn() ?? 0;
 }
 ?>
@@ -282,7 +282,6 @@ li a img:hover {
                     Mes commandes
                 </a>
             </li>
-            <li><a href="contact.php" class="<?= $current_page == 'contact.php' ? 'active' : '' ?>">Contact</a></li>
             <li><a href="faq.php" class="<?= $current_page == 'faq.php' ? 'active' : '' ?>">FAQ</a></li>
 
             <?php if ($isLoggedIn): ?>

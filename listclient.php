@@ -2,7 +2,7 @@
     require("config.php");
 
     //  Récupérer tous les clients
-    $requeteClients = "SELECT * FROM client";
+    $requeteClients = "SELECT * FROM client WHERE email IS NOT NULL ";
     $prepareClients = $pdo->prepare($requeteClients);
     $prepareClients->execute();
     $clients = $prepareClients->fetchAll(PDO::FETCH_ASSOC);
@@ -61,7 +61,6 @@
                     <th>Nom</th>
                     <th>Prénoms</th>
                     <th>Email</th>
-                    <th>Mot de passe</th>
                     <th>Téléphone</th>
                     <th>Pays</th>
                     <th>Ville</th>
@@ -76,7 +75,6 @@
                     <td><?= $client["nom"] ?></td>
                     <td><?= $client["prenom"] ?></td>
                     <td><?= $client["email"] ?></td>
-                    <td><?= $client["mot_de_passe"] ?></td>
                     <td><?= $client["telephone"] ?></td>
                     <td><?= $client["pays"] ?></td>
                     <td><?= $client["ville"] ?></td>

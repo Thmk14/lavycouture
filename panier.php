@@ -12,7 +12,7 @@ $id_client = $_SESSION['id'];
                   JOIN article art ON c.id_article = art.id_article
                   JOIN commande cmd ON c.id_commande = cmd.id_commande
                  JOIN mensuration m ON cmd.id_mensuration= m.id_mensuration
-                  WHERE cmd.id_client = ? AND cmd.etat_commande = 0
+                  WHERE cmd.id_client = ? AND cmd.etat_commande = 0 AND cmd.statut = 'En attente'
   
                   ";
         $stmt = $pdo->prepare($query);
@@ -291,7 +291,7 @@ echo "<td><img src='uploads/$tissu' style='height: 80px;' alt='Image Client' cla
            
 
             // Bouton supprimer
-            echo "<td><a href='supprimer_panier.php?id={$row['id_concerner']}' onclick='return confirm(\"Supprimer cet article ?\")'><i class='fa-solid fa-trash'></i></a></td>";
+            echo "<td><a href='supprimer_panier.php?id={$row['id_commande']}' onclick='return confirm(\"Supprimer cet article ?\")'><i class='fa-solid fa-trash'></i></a></td>";
 
             echo "</tr>";
         }

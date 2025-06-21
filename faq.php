@@ -204,6 +204,7 @@ if (session_status() == PHP_SESSION_NONE) {
             filterFaqs('all', '');
         });
     </script>
-
+   
+<?php include 'footer.php'; ?>
 </body>
 </html>

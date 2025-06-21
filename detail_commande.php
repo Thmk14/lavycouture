@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_commande_id'])
     $stmt_status->execute([$commande_id]);
     $status = $stmt_status->fetch(PDO::FETCH_ASSOC);
 
-    if ($status && $status['statut'] === 'En attente') {
+    if ($status && $status['statut'] === 'E') {
         try {
             $pdo->beginTransaction();
 
@@ -49,57 +49,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_commande_id'])
 }
 
 // Récupération des données du client et des commandes
-$sql = "SELECT c.*, art.*, cmd.*, cl.*, m.*
+$sql = "SELECT *
         FROM concerner c
         JOIN article art ON c.id_article = art.id_article
         JOIN commande cmd ON c.id_commande = cmd.id_commande
-        JOIN client cl ON cmd.id_client = cl.id_client
         JOIN mensuration m ON cmd.id_mensuration = m.id_mensuration
-        WHERE cmd.id_client = ?";
+        WHERE cmd.id_client = ? AND cmd.statut != ?";
 
 $stmt = $pdo->prepare($sql);
-$stmt->execute([$id_client]);
+$stmt->execute([$id_client,'En attente']);
 $commandes = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Regroupement des commandes par client
-$grouped = [];
-foreach ($commandes as $cmd) {
-    $key = $cmd['id_client'];
-    if (!isset($grouped[$key])) {
-        $grouped[$key] = [
-            'client' => [
-                'nom' => $cmd['nom'],
-                'prenom' => $cmd['prenom'],
-                'email' => $cmd['email'],
-                'telephone' => $cmd['telephone'],
-                'ville' => $cmd['ville'],
-                'pays' => $cmd['pays'],
-                'lieu_habitation' => $cmd['lieu_habitation']
-            ],
-            'commandes' => []
-        ];
-    }
-
-    $grouped[$key]['commandes'][] = [
-        'id_commande' => $cmd['id_commande'],
-        'mode_paiement' => $cmd['mode_paiement'],
-        'montant_total' => $cmd['montant_total'],
-        'date_commande' => $cmd['date_commande'],
-        'statut' => $cmd['statut'],
-        'date_livraison' => $cmd['date_livraison'],
-        'articles' => [
-            [
-                'image' => $cmd['image'],
-                'nom_modele' => $cmd['nom_modele'],
-                'quantite' => $cmd['quantite'],
-                'taille_standard' => $cmd['taille_standard'],
-                'tissu' => $cmd['tissu'],
-                'description_modele' => $cmd['description_modele'],
-                'prix' => $cmd['prix']
-            ]
-        ]
-    ];
-}
 
 ?>
 
@@ -424,42 +383,27 @@ form button {
 <?php include 'menu.php'; ?>
 <div class="main-content">
 
-
-<?php
-$total_general = 0;
-
-if (count($commandes) > 0):
-    foreach ($grouped as $client_id => $data): ?>
-        <h1>Mes informations</h1>
+<h1>Mes commandes</h1>
 
         <button class="btn"><a href="historique" >Historique</a></button>
-        <div class="commande-block">
-            <p><strong>Nom et prénom :</strong> <?= htmlspecialchars($data['client']['nom'] . ' ' . $data['client']['prenom']) ?></p>
-            
-            <p><strong>Email :</strong> <?= htmlspecialchars($data['client']['email']) ?></p>
-            <p><strong>Téléphone :</strong> <?= htmlspecialchars($data['client']['telephone']) ?></p>
-            <p><strong>Pays :</strong> <?= htmlspecialchars($data['client']['pays']) ?></p>
-            <p><strong>Ville :</strong> <?= htmlspecialchars($data['client']['ville']) ?></p>
-            <p><strong>Lieu d'habitation :</strong> <?= htmlspecialchars($data['client']['lieu_habitation']) ?></p>
-        </div>
+        
 
-        <?php foreach ($data['commandes'] as $commande): ?>
+<?php
+echo "<br><strong>Nombre commande :</strong>". count($commandes) . "<br>";
+$total_general = 0;
+if (count($commandes) > 0):
+
+    foreach ($commandes as $id => $data): ?>
+        
+
+        
             <div class="commande-block">
-                <h2>Commande #<?= htmlspecialchars($commande['id_commande']) ?></h2>
-                <p><strong>Mode de paiement :</strong> <?= ($commande['mode_paiement']) ?></p>
-                <p><strong>Date de la commande :</strong> <?= ($commande['date_commande']) ?></p>
+                <h2>Commande #<?= htmlspecialchars($data['id_commande']) ?></h2>
+                <p><strong>Mode de paiement :</strong> <?= ($data['mode_paiement']) ?></p>
+                <p><strong>Date de la commande :</strong> <?= ($data['date_commande']) ?></p>
                 
     <p><strong>Statut commande :</strong>
-<?php
-$statut = strtolower($commande['statut'] ?? 'en attente');
-echo match($statut) {
-    'en route' => "<span class='status en-route' data-base='En route'>En route 🚚</span>",
-    'récupération du colis' => "<span class='status en-retrait' data-base='Récupération du colis'>Récupération du colis 📦</span>",
-    'livrée' => "<span class='status en-livree'>Livrée ✅</span>",
-    'en attente' => "<span class='status en-attente' data-base='En attente'>En attente ⏳</span>",
-    default => "<span class='status unknown'>Inconnu</span>"
-};
-?>
+       <?= ($data['statut']) ?>
 </p>
 
 
@@ -478,20 +422,21 @@ echo match($statut) {
                     </thead>
                     <tbody>
                         <?php $total_commande = 0; ?>
-                        <?php foreach ($commande['articles'] as $article): ?>
-                            <?php $sous_total = $article['quantite'] * $article['prix']; ?>
-                            <?php $total_commande += $sous_total; ?>
+                            <?php $sous_total = $data['quantite'] * $data['prix']; ?>
+                            <?php $total_commande += $sous_total;
+                            $tissu = !empty($data['tissu']) ? $data['tissu'] : 'aucun.png';
+                            ?>
+                            
                             <tr>
-                                <td><img src="uploads/<?= htmlspecialchars($article['image']) ?>" class="img-thumbnail"></td>
-                                <td><?= htmlspecialchars($article['nom_modele']) ?></td>
-                                <td><img src="uploads/<?= ($article['tissu']) ?>" class="img-thumbnail"></td>
-                                <td><?= ($article['quantite']) ?></td>
-                                <td><?= ($article['taille_standard']) ?></td>
-                                <td><?= ($article['description_modele']) ?></td>
-                                <td><?= ($article['prix']) ?> FCFA</td>
+                                <td><img src="uploads/<?= htmlspecialchars($data['image']) ?>" class="img-thumbnail"></td>
+                                <td><?= htmlspecialchars($data['nom_modele']) ?></td>
+                                <td><img src="uploads/<?= $tissu ?>" class="img-thumbnail"></td>
+                                <td><?= ($data['quantite']) ?></td>
+                                <td><?= ($data['taille_standard']) ?></td>
+                                <td><?=  (!empty($row['description_modele']) ? $row['description_modele'] : "Aucune")  ?></td>
+                                <td><?= ($data['prix']) ?> FCFA</td>
                                 <td><?= ($sous_total) ?> FCFA</td>
                             </tr>
-                        <?php endforeach; ?>
                     </tbody>
                 </table>
 
@@ -499,19 +444,10 @@ echo match($statut) {
                 
                 <?php $total_general += $total_commande; ?>
 
-                <!-- Bouton supprimer -->
-<?php if ($statut === 'en attente'): ?>
-<form method="POST" onsubmit="return confirm('Voulez-vous vraiment supprimer cette commande ?');">
-    <input type="hidden" name="delete_commande_id" value="<?= htmlspecialchars($commande['id_commande']) ?>">
-    <button type="submit" class="buttonn active-button">
-        Supprimer la commande
-    </button>
-</form>
-<?php endif; ?>
+           
 
             </div>
         <?php endforeach; ?>
-    <?php endforeach; ?>
 
     <div class="total-general">
         Montant total général : <?= number_format($total_general, 0, ',', ' ') ?> FCFA

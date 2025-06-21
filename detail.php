@@ -28,7 +28,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['add_to_cart'])) {
     $taille = trim($_POST['taille'] ?? '');
 
     // Validation taille
-    $taille_autorisees = ['XS', 'S', 'M', 'L', 'XL', 'Mesures', "Prendre à l'atelier"];
+    $taille_autorisees = ['XS', 'S', 'M', 'L', 'XL', 'Mesures'];
     if (!in_array($taille, $taille_autorisees)) {
         exit("Taille non valide.");
     }
@@ -36,6 +36,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['add_to_cart'])) {
     $tissu = null;
     $personnalisation = null;
     $supplement = 0;
+    $statut = 'En attente';
 
     // Gestion personnalisation
     if (!empty($_POST['enable_personnalisation'])) {
@@ -82,15 +83,15 @@ else{
     $id_mensuration = null;
     
 }
-    if ($taille === 'XS' || $taille === 'S' || $taille === 'M' || $taille === 'L' || $taille === 'XL') {
+    if ($taille === 'XS' || $taille === 'S' || $taille === 'M' || $taille === 'L' || $taille === 'XL' || $taille === 'Mesures') {
         $stmt = $pdo->prepare("INSERT INTO mensuration (taille_standard) VALUES (?)");
         $stmt->execute([ $taille]);
         $id_mensuration = $pdo->lastInsertId();
     }
 
     // Ajouter dans lien_commande_article
-    $stmt = $pdo->prepare("INSERT INTO commande (id_client,id_mensuration, quantite, description_modele, tissu, supplement_prix, montant_total,etat_commande) VALUES ( ?,?,?, ?, ?, ?, ?, ?)");
-    $stmt->execute([$id_client,$id_mensuration, $quantite, $personnalisation, $tissu, $supplement, $montant_total,0]);
+    $stmt = $pdo->prepare("INSERT INTO commande (id_client,id_mensuration, quantite,statut, description_modele, tissu, supplement_prix, montant_total,etat_commande) VALUES ( ?,?,?,?, ?, ?, ?, ?, ?)");
+    $stmt->execute([$id_client,$id_mensuration, $quantite, $statut, $personnalisation, $tissu, $supplement, $montant_total,0]);
 
     $id_commande = $pdo->lastInsertId();
     $stmt = $pdo->prepare("INSERT INTO concerner (id_commande, id_article) VALUES ( ?, ?)");
@@ -140,7 +141,6 @@ else{
         <option value="L">L</option>
         <option value="XL">XL</option>
         <option value="Mesures">Voir mes mesures</option>
-        <option value="Prendre à l'atelier">Prendre à l'atelier</option>
     </select>
 
     <label>
@@ -194,23 +194,25 @@ else{
     });
 
     // Gestion de la personnalisation
+   document.addEventListener("DOMContentLoaded", () => {
     const checkboxPerso = document.getElementById("enable_personnalisation");
     const champsPerso = document.getElementById("personnalisation_fields");
 
-    checkboxPerso.addEventListener("change", () => {
-        if (checkboxPerso.checked) {
-            champsPerso.style.display = "block";
-        } else {
-            champsPerso.style.display = "none";
-        }
-    });
+    if (!checkboxPerso || !champsPerso) return;
 
-    // Affiche les champs si la case est cochée au rechargement (utile après un retour arrière navigateur)
-    window.addEventListener("DOMContentLoaded", () => {
-        if (checkboxPerso.checked) {
-            champsPerso.style.display = "block";
-        }
+    // Restaurer l'état depuis le localStorage
+    const isChecked = localStorage.getItem("personnalisation_active") === "true";
+    checkboxPerso.checked = isChecked;
+    champsPerso.style.display = isChecked ? "block" : "none";
+
+    // Mettre à jour le localStorage lors du changement
+    checkboxPerso.addEventListener("change", () => {
+        const actif = checkboxPerso.checked;
+        champsPerso.style.display = actif ? "block" : "none";
+        localStorage.setItem("personnalisation_active", actif);
     });
+});
+
 </script>
 
 <?php include 'footer.php'; ?>

@@ -148,6 +148,7 @@
             <td><?php echo $affiche["prix"] ?></td>
 
             <td><a href="modifarticle.php?param=<?php echo $affiche["id_article"] ?>"><i class="fa-solid fa-pen-to-square"></i></a></td>
+            
             <td><a onclick="if(confirm('voulez vous supprimer ?')){}else{return false}" href="suppvet.php?param=<?php echo $affiche["id_article"] ?>"><i class="fa-solid fa-trash"></i></a></td>
             
         </tr>

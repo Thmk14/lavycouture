@@ -180,17 +180,18 @@
 
   <!-- SIDEBAR -->
   <div class="sidebar">
-    <header>Lavit couture</header>
+    <header>Lavy couture</header>
 
     <ul>
       <a href="admin.php" class="active"><li>Tableau de bord Administrateur</li></a>
       
-      <a href="profil_personnel.php"><li>Mon profil</li></a>
+      <a href="profil.php"><li>Mon profil</li></a>
       <a href="liste_admin_commande.php"><li>Commandes</li></a>
       <a href="listclient.php"><li>Nos clients</li></a>
       <a href="listcouturier.php"><li>Nos couturiers</li></a>
       <a href="listlivreur.php"><li>Nos livreurs</li></a>
       <a href="listarticle.php"><li>Nos vêtements</li></a>
+      <a href="listadmin.php"><li>Nos administrateurs</li></a>
     </ul>
 
     <div class="logout">

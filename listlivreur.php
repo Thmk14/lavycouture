@@ -64,7 +64,6 @@
                     <th>Nom</th>
                     <th>Prénoms</th>
                     <th>Email</th>
-                    <th>Mot de passe</th>
                     <th>Téléphone</th>
                     <th>Modifier</th>
                     <th>Supprimer</th>
@@ -77,7 +76,6 @@
                     <td><?= $livreur["nom"] ?></td>
                     <td><?= $livreur["prenom"] ?></td>
                     <td><?= $livreur["email"] ?></td>
-                    <td><?= $livreur["mot_de_passe"] ?></td>
                     <td><?= $livreur["telephone"] ?></td>
                     <td><a href="modiflivreur.php?param=<?= $livreur["id_livreur"] ?>"><i class="fa-solid fa-pen-to-square"></i></a></td>
                     

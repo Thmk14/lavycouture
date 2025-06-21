@@ -15,7 +15,7 @@ $sql = $pdo->prepare("SELECT * FROM concerner
     JOIN commande ON concerner.id_commande = commande.id_commande
     JOIN article ON concerner.id_article = article.id_article
     JOIN client ON commande.id_client = client.id_client
-    WHERE client.id_client = ?
+    WHERE client.id_client = ?AND commande.statut = 'Livrée'
     ORDER BY commande.date_commande DESC");
 
 $sql->execute([$id_client]);
@@ -43,20 +43,18 @@ h2 {
 }
 
 .commandes-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 20px;
-  padding: 10px;
+ display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 30px;
 }
 
 .commande {
   background: #fff;
   padding: 18px;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-  display: flex;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); 
   flex-direction: column;
-  justify-content: space-between;
   height: 100%;
   transition: transform 0.2s ease;
   margin: 0 30px;

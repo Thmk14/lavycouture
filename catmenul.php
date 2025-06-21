@@ -179,13 +179,13 @@
 
   <!-- SIDEBAR -->
   <div class="sidebar">
-    <header>Lavit couture</header>
+    <header>Lavy couture</header>
 
     <ul>
       <a href="" class="active"><li>Tableau de bord livreur</li><a>
       
-      <a href="profil_personnel.php"><li>Mon profil</li></a>
-      <a href="livreur.php"><li>Commandes</li></a>
+      <a href="profil.php"><li>Mon profil</li></a>
+      <a href="dashboard_livreur.php"><li>Commandes</li></a>
     </ul>
 
     <div class="logout">

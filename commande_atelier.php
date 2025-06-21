@@ -239,7 +239,7 @@ if (isset($_POST['ajouter_mensuration'])) {
     <!-- Section Commande -->
     <div class="section">
        
-
+       <p>modifer mensuration</p>
         <?php foreach ($client_data['temp_articles'] as $index => $article): ?>
             <div class="info <?= !empty($article['mensuration_indices']) ? 'paired' : '' ?>">
                 <p><strong>Commande #<?= $index + 1 ?></strong></p>
