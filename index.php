@@ -31,8 +31,9 @@ function hasOrdersReadyForDelivery($pdo, $id_client) {
 
 
 function getPanierCount($pdo, $id_client) {
-    $stmt = $pdo->prepare("SELECT SUM(quantite) FROM commande WHERE id_client = ? AND statut = ?");
-    $stmt->execute([$id_client, 'En attente']);
+   
+    $stmt = $pdo->prepare("SELECT SUM(quantite) FROM commande WHERE id_client = ? AND etat_commande = ? AND statut = ?");
+    $stmt->execute([$id_client,0,'En attente']);
     return $stmt->fetchColumn() ?? 0;
 }
 

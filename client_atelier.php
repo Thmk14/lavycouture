@@ -2,7 +2,8 @@
     require("config.php");
 
     //  Récupérer tous les clients
-    $requeteClients = "SELECT * FROM client WHERE email IS NULL AND mot_de_passe IS NULL ";
+    $requeteClients = "SELECT * 
+    FROM client WHERE email IS NULL AND mot_de_passe IS NULL ";
     $prepareClients = $pdo->prepare($requeteClients);
     $prepareClients->execute();
     $clients = $prepareClients->fetchAll(PDO::FETCH_ASSOC);
@@ -89,7 +90,7 @@
                     <td><?= $client["prenom"] ?></td>
                     <td><?= $client["telephone"] ?></td>
                     <td><?= $client["lieu_habitation"] ?></td>
-                    <td><a href="commande_atelier.php?param=<?= $client["id_client"] ?>"><button class="button">Commande +</button></a></td>
+                    <td><a href="ajout_atelier.php?id_client=<?= $client["id_client"] ?>"><button class="button">Commande +</button></a></td>
                     
                     <td><a href="modifclient.php?param=<?= $client["id_client"] ?>"><i class="fa-solid fa-pen-to-square"></i></a></td>
                     

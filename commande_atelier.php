@@ -1,286 +1,210 @@
 <?php
-require("config.php");
-require("session.php");
+include("config.php");
+include("session.php");
 
-if (isset($_GET['param'])) {
-    $id_client = intval($_GET['param']);
-    $_SESSION['client_en_cours'] = $id_client;
-} elseif (isset($_SESSION['client_en_cours'])) {
-    $id_client = $_SESSION['client_en_cours'];
-} else {
-    die("Aucun client sélectionné.");
-}
-
-$stmt = $pdo->prepare("SELECT nom, prenom FROM client WHERE id_client = ?");
-$stmt->execute([$id_client]);
-$client = $stmt->fetch();
-$nom_prenom = $client ? $client['prenom'] . ' ' . $client['nom'] : '';
-
-if (!isset($_SESSION['clients_data'])) {
-    $_SESSION['clients_data'] = [];
-}
-if (!isset($_SESSION['clients_data'][$id_client])) {
-    $_SESSION['clients_data'][$id_client] = [
-        'temp_articles' => [],
-        'temp_mensurations' => [],
-        'mensurations_selectionnees' => []
-    ];
-}
-
-$client_data = &$_SESSION['clients_data'][$id_client];
-
-if (isset($_POST['supprimer_article'])) {
-    $index = $_POST['index'];
-    if (isset($client_data['temp_articles'][$index])) {
-        unset($client_data['temp_articles'][$index]);
-        $client_data['temp_articles'] = array_values($client_data['temp_articles']);
-    }
-    header("Location: " . $_SERVER['PHP_SELF']);
+if (!isset($_GET['id_client'])) {
+    echo "Client non spécifié.";
     exit();
 }
 
-if (isset($_POST['supprimer_mensuration'])) {
-    $index = $_POST['index'];
-    if (isset($client_data['temp_mensurations'][$index])) {
-        unset($client_data['temp_mensurations'][$index]);
-        $client_data['temp_mensurations'] = array_values($client_data['temp_mensurations']);
-    }
-    header("Location: " . $_SERVER['PHP_SELF']);
-    exit();
+$id_client = $_GET['id_client'];
+
+// Récupérer les infos client
+$stmtClient = $pdo->prepare("SELECT nom, prenom FROM client WHERE id_client = ?");
+$stmtClient->execute([$id_client]);
+$client = $stmtClient->fetch(PDO::FETCH_ASSOC);
+if (!$client) {
+    echo "<p style='color:red; text-align:center;'>Client introuvable.</p>";
+    exit;
 }
 
-if (isset($_POST['associer_mensurations']) && isset($_POST['selected_mensurations'])) {
-    $_SESSION['clients_data'][$id_client]['mensurations_selectionnees'] = array_map('intval', $_POST['selected_mensurations']);
-    header("Location: " . $_SERVER['PHP_SELF']);
-    exit();
-}
-
-if (isset($_POST['ajouter_article'])) {
-    $article = [
-        'nom_modele' => $_POST['nom_modele'],
-        'description_modele' => $_POST['description_modele'],
-        'image' => $_FILES['image']['name'],
-        'tissu' => $_FILES['tissu']['name'],
-        'quantite' => $_POST['quantite'],
-        'mensuration_indices' => $_SESSION['clients_data'][$id_client]['mensurations_selectionnees'] ?? []
-    ];
-    $client_data['temp_articles'][] = $article;
-    $_SESSION['clients_data'][$id_client]['mensurations_selectionnees'] = [];
-    header("Location: " . $_SERVER['PHP_SELF']);
-    exit();
-}
-
-if (isset($_POST['ajouter_mensuration'])) {
-    $mensuration = [
-        'taille' => $_POST['taille'],
-        'poitrine' => $_POST['poitrine'],
-        'hanche' => $_POST['hanche'],
-        'taille_de_buste' => $_POST['taille_de_buste'],
-        'bras' => $_POST['bras'],
-        'tbras' => $_POST['tbras'],
-        'longueur_jambe' => $_POST['longueur_jambe'],
-        'cuisse' => $_POST['cuisse'],
-        'cou' => $_POST['cou'],
-        'epaule' => $_POST['epaule'],
-        'entrejambe' => $_POST['entrejambe'],
-        'total' => $_POST['total']
-    ];
-    $client_data['temp_mensurations'][] = $mensuration;
-    header("Location: " . $_SERVER['PHP_SELF']);
-    exit();
-}
-
+$requete = "SELECT c.*, a.*, cmd.*, m.*
+            FROM concerner c
+            JOIN article a ON c.id_article = a.id_article 
+            JOIN commande cmd ON c.id_commande = cmd.id_commande
+            JOIN client cl ON cmd.id_client = cl.id_client
+            JOIN mensuration m ON cmd.id_mensuration = m.id_mensuration
+            WHERE cmd.id_client = ? AND visibilite = ?";
+$prepare = $pdo->prepare($requete);
+$prepare->execute([$id_client,1]);
+$articles = $prepare->fetchAll(PDO::FETCH_ASSOC);
 ?>
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Nouvelle Commande</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Articles - Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
     <style>
         body {
-            font-family: Arial;
-            background: #fce4f7;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            display: flex;
-            justify-content: space-between;
-            gap: 40px;
-        }
-        .section {
-            flex: 1;
-            background: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            padding-top: 20px;
         }
         h1 {
             text-align: center;
-            
-        }
-        h3 {
-            text-align: center;
-            margin-top: 0;
             color: #a72872;
+            margin-top: 80px;
+            font-size: 3em;
         }
-        .btn-ajouter {
-            background: #a72872;
+        .add-button {
+            display: block;
+            width: 250px;
+            margin: 20px auto;
+            padding: 12px;
+            background-color: #e462bd;
             color: white;
-            padding: 10px 15px;
+            font-size: 1.2em;
             border: none;
             border-radius: 5px;
-            margin-bottom: 20px;
-            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
         }
-        .btn-supprimer {
-            background: #d9534f;
+        .add-button:hover {
+            background-color: #c74d9e;
+        }
+        .table-responsive {
+            margin: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        .table thead th {
+            background-color: #bf59a2;
             color: white;
-            padding: 5px 10px;
-            border: none;
-            border-radius: 4px;
+            padding: 15px;
+            text-align: center;
+        }
+        .table tbody td {
+            text-align: center;
+            vertical-align: middle;
+            padding: 12px;
+        }
+        .img-thumbnail {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 5px;
             cursor: pointer;
         }
-        .info {
-            margin-top: 15px;
-            border-top: 2px dashed #a72872;
-            padding-top: 15px;
-            margin-bottom: 30px;
+        .action-icon {
+            margin: 0 8px;
+            font-size: 1.4em;
+            color: #a72872;
         }
-        .info img {
-            max-width: 100px;
+        .action-icon.edit:hover {
+            color: #007bff;
+        }
+        .action-icon.delete:hover {
+            color: #dc3545;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            max-width: 90%;
+            max-height: 80vh;
+            object-fit: contain;
             border-radius: 8px;
         }
-        form {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        input, textarea, select {
-            padding: 8px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-        }
-        .paired {
-            background-color: #fff5fa;
-            padding: 10px;
-            border-left: 4px solid #a72872;
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 35px;
+            color: #fff;
+            font-size: 45px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-    <a href="client_atelier.php"><button  class="btn-ajouter">Retour</button></a>
-<h1>Client : <?= htmlspecialchars($nom_prenom) ?> </h1>
-<div class="container">
-
-<!-- Section Mensuration -->
-    <div class="section">
-         <h3>Commande</h3>
-        <form action="" method="POST" enctype="multipart/form-data">
-            <input type="text" name="nom_modele" placeholder="Nom du modèle" required>
-            <textarea name="description_modele" placeholder="Description..." required></textarea>
-            <input type="file" name="image" accept="image/*" required>
-            <input type="file" name="tissu" accept="image/*" required>
-            <input type="number" name="quantite" min="1" placeholder="Quantité" required>
-            <button type="submit" name="ajouter_article" class="btn-ajouter">+ Ajouter commande</button>
-        </form>
-        
-        <h3>Mensurations</h3>
-        <form action="" method="POST">
-        <input type="number" id="taille" name="taille"  placeholder=tour_taille required>
-        <input type="number" id="poitrine" name="poitrine" required>
-        <input type="number" id="hanche" name="hanche"  required>
-        <input type="number" id="taille_de_buste" name="taille_de_buste" required>
-        <input type="number" id="bras" name="bras" required>
-        <input type="number" id="tbras" name="tbras" required>
-        <input type="number" id="longueur_jambe" name="longueur_jambe" required>
-        <input type="number" id="cuisse" name="cuisse" required>
-        <input type="number" id="cou" name="cou" required>
-        <input type="number" id="epaule" name="epaule" required>
-        <input type="number" id="entrejambe" name="entrejambe" required>
-        <input type="number" id="total" name="total" required>
-
-
-
-            <button type="submit" name="ajouter_mensuration" class="btn-ajouter">+ Ajouter mensuration</button>
-        </form>
-
-        <form action="" method="POST">
-            <label><strong>Sélectionner les mensurations à associer à la prochaine commande :</strong></label>
-            <?php foreach ($client_data['temp_mensurations'] as $index => $m): ?>
-                <div>
-                    <input type="checkbox" name="selected_mensurations[]" value="<?= $index ?>"
-                        <?= in_array($index, $_SESSION['clients_data'][$id_client]['mensurations_selectionnees'] ?? []) ? 'checked' : '' ?> >
-                    
-                        Mensuration #<?= $index + 1 ?> 
-                        :
-                    Tour de poitrine:<?= htmlspecialchars($m['tour_poitrine']) ?>,
-                    Tour de taille <?= htmlspecialchars($m['tour_taille']) ?>,
-                    Bassin <?= htmlspecialchars($m['tour_hanche']) ?>
-                    Taille <?= htmlspecialchars($m['tour_taille']) ?>,
-                    Bassin <?= htmlspecialchars($m['tour_bassin']) ?>
-                    Taille <?= htmlspecialchars($m['tour_taille']) ?>,
-                    Bassin <?= htmlspecialchars($m['tour_bassin']) ?>
-                    Taille <?= htmlspecialchars($m['tour_taille']) ?>,
-                    Bassin <?= htmlspecialchars($m['tour_bassin']) ?>
-                    Taille <?= htmlspecialchars($m['tour_taille']) ?>,
-                    Bassin <?= htmlspecialchars($m['tour_bassin']) ?>
-                    Taille <?= htmlspecialchars($m['tour_taille']) ?>,
-                    Bassin <?= htmlspecialchars($m['tour_bassin']) ?>
-
-                </div>
-            <?php endforeach; ?>
-            <button type="submit" name="associer_mensurations" class="btn-ajouter">Associer à la prochaine commande</button>
-        </form>
+    <div class="container-fluid">
+         <h1>Commandes de <?= htmlspecialchars($client['nom'] . ' ' . $client['prenom']) ?></h1>
+        <a href="ajout_atelier.php" class="add-button"><i class="fa-solid fa-plus"></i> Ajouter un nouvel article</a>
+        <div class="table-responsive">
+            <?php if (!$_SESSION['id'] || empty($articles)): ?>
+                      <div class="text-center">Aucun article trouv&eacute;.</div>
+                <?php else: ?>
+          
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            
+                            <th>Image Mod&egrave;le</th>
+                            <th>Image Tissu</th>
+                            <th>Description</th>
+                            <th>Montant</th>
+                            <th>Mensuration</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($articles as $article): ?>
+                            <tr>
+                                <td><img src="uploads/<?= ($article['image']) ?>" class="img-thumbnail" data-fullsrc="uploads/<?= htmlspecialchars($article['image']) ?>"></td>
+                                <td>
+                                    <?php if (!empty($article['tissu'])): ?>
+                                        <img src="uploads/<?= htmlspecialchars($article['tissu']) ?>" class="img-thumbnail" data-fullsrc="uploads/<?= htmlspecialchars($article['tissu']) ?>">
+                                    <?php else: ?>Aucun<?php endif; ?>
+                                </td>
+                                <td><?= htmlspecialchars($article["description_modele"] ?? 'Aucune') ?></td>
+                                <td><?= number_format($article["montant_total"] ?? 0, 0, ',', ' ') ?> FCFA</td>
+                                <td>
+                                                    <a href="listmesurec.php?id_commande=<?= ($article['id_commande']) ?>" class="btn btn-prete">
+                                                        Mensuration
+                                                    </a>
+                                                </td>
+                                <td>
+                                    <a href="modifarticle.php?id_article=<?= htmlspecialchars($article["id_article"]) ?>" class="action-icon edit"><i class="fa fa-pen"></i></a>
+                                    <a href="suppvet.php?id_article=<?= htmlspecialchars($article["id_article"]) ?>" onclick="return confirm('Supprimer ?')" class="action-icon delete"><i class="fa fa-trash"></i></a>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            
+            <?php endif; ?>
+        </div>
     </div>
 
-    
-    <!-- Section Commande -->
-    <div class="section">
-       
-       <p>modifer mensuration</p>
-        <?php foreach ($client_data['temp_articles'] as $index => $article): ?>
-            <div class="info <?= !empty($article['mensuration_indices']) ? 'paired' : '' ?>">
-                <p><strong>Commande #<?= $index + 1 ?></strong></p>
-                <p><strong>Nom :</strong> <?= htmlspecialchars($article['nom_modele']) ?></p>
-                <p><strong>Description :</strong> <?= htmlspecialchars($article['description_modele']) ?></p>
-                <p><strong>Quantité :</strong> <?= htmlspecialchars($article['quantite']) ?></p>
-                <img src="uploads/<?= htmlspecialchars($article['image']) ?>" alt="Image article">
-                <img src="uploads/<?= htmlspecialchars($article['tissu']) ?>" alt="Tissu">
-                <?php if (!empty($article['mensuration_indices'])): ?>
-                    <p><em><strong>Mensurations associées :</strong></em></p>
-                    <ul>
-                        <?php foreach ($article['mensuration_indices'] as $mIndex): 
-                            if (isset($client_data['temp_mensurations'][$mIndex])) {
-                                $m = $client_data['temp_mensurations'][$mIndex]; ?>
-                                <li>:
-                    Tour de poitrine:<?= htmlspecialchars($m['tour_poitrine']) ?>,
-                    Tour de taille <?= htmlspecialchars($m['tour_taille']) ?>,
-                    Bassin <?= htmlspecialchars($m['tour_hanche']) ?>
-                    Taille <?= htmlspecialchars($m['tour_taille']) ?>,
-                    Bassin <?= htmlspecialchars($m['tour_bassin']) ?>
-                    Taille <?= htmlspecialchars($m['tour_taille']) ?>,
-                    Bassin <?= htmlspecialchars($m['tour_bassin']) ?>
-                    Taille <?= htmlspecialchars($m['tour_taille']) ?>,
-                    Bassin <?= htmlspecialchars($m['tour_bassin']) ?>
-                    Taille <?= htmlspecialchars($m['tour_taille']) ?>,
-                    Bassin <?= htmlspecialchars($m['tour_bassin']) ?>
-                    Taille <?= htmlspecialchars($m['tour_taille']) ?>,
-                    Bassin <?= htmlspecialchars($m['tour_bassin']) ?>
-                                </li>
-                        <?php } endforeach; ?>
-                    </ul>
-                <?php endif; ?>
-                <form action="" method="POST">
-                    <input type="hidden" name="index" value="<?= $index ?>">
-                    <button type="submit" name="supprimer_article" class="btn-supprimer">Supprimer</button>
-                </form>
-            </div>
-        <?php endforeach; ?>
+    <div id="imageModal" class="modal">
+        <span class="close-modal">&times;</span>
+        <img class="modal-content" id="modalImage">
     </div>
 
-    
-</div>
+    <script>
+        const imageModal = document.getElementById("imageModal");
+        const modalImage = document.getElementById("modalImage");
+        const closeButton = document.querySelector(".close-modal");
+
+        document.querySelectorAll(".img-thumbnail").forEach(img => {
+            img.onclick = function () {
+                imageModal.style.display = "flex";
+                modalImage.src = this.dataset.fullsrc || this.src;
+            };
+        });
+
+        closeButton.onclick = function () {
+            imageModal.style.display = "none";
+        };
+
+        window.onclick = function (event) {
+            if (event.target === imageModal) {
+                imageModal.style.display = "none";
+            }
+        };
+    </script>
 </body>
 </html>

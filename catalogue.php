@@ -14,7 +14,7 @@ $categorie_filtre = isset($_GET['categorie']) ? trim($_GET['categorie']) : '';
 $search_term = isset($_GET['search']) ? trim($_GET['search']) : '';
 
 // Construction de la requête SQL avec filtre
-$sql = "SELECT * FROM article WHERE 1=1";
+$sql = "SELECT * FROM article WHERE 1=1 AND visibilite = 0";
 $params = [];
 
 if ($categorie_filtre && in_array($categorie_filtre, ['fillette', 'jeune dame', 'dame mature'])) {

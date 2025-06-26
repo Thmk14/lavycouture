@@ -137,7 +137,10 @@ if (isset($_GET['id_commande']) && is_numeric($_GET['id_commande'])) {
         <?php endif; ?>
 
     <div class="back">
-        <a href="panier.php">Retour aux commandes</a>
+       <a href="javascript:history.back()" >
+    &larr; Retour 
+</a>
+
     </div>
 </div>
 

@@ -54,461 +54,1002 @@ $sql = "SELECT *
         JOIN article art ON c.id_article = art.id_article
         JOIN commande cmd ON c.id_commande = cmd.id_commande
         JOIN mensuration m ON cmd.id_mensuration = m.id_mensuration
-        WHERE cmd.id_client = ? AND cmd.statut != ?";
+        WHERE cmd.id_client = ? AND cmd.statut != ? AND cmd.statut != ?";
 
 $stmt = $pdo->prepare($sql);
-$stmt->execute([$id_client,'En attente']);
+$stmt->execute([$id_client,'En attente','Livrée']);
 $commandes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 ?>
-
-
-
 
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css" integrity="sha512-5Hs3dF2AEPkpNAR7UiOHba+lRSJNeM2ECkwxUIxC1Q/FLycGTbNapWXB4tP889k5T5Ju8fs4b1P5z/iB4nMfSQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-     
-    <title>Commandes Clients - Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css">
+    <title>Mes Commandes - Lavy Couture</title>
     <style>
+        :root {
+            --primary-color:rgb(219, 46, 176);
+            --secondary-color:rgb(167, 40, 135);
+            --accent-color: #f3c5dd;
+            --text-color: #333;
+            --light-text-color: #555;
+            --background-color: #f8f9fa;
+            --card-background: #ffffff;
+            --border-color: #eee;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+            --danger-color: #dc3545;
+            --gradient-primary: linear-gradient(135deg,rgb(219, 46, 182) 0%,rgb(167, 40, 131) 100%);
+            --gradient-secondary: linear-gradient(135deg,rgb(243, 197, 229) 0%,rgb(232, 179, 214) 100%);
+            --shadow-light: 0 2px 10px rgba(0, 0, 0, 0.08);
+            --shadow-medium: 0 5px 20px rgba(0, 0, 0, 0.12);
+            --shadow-heavy: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
 
- /* ========= Global Styles ========= */
-body {
-    margin: 0;
-    padding: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color:rgb(254, 216, 241);
-    color: #333;
-}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-h1 {
-    text-align: center;
-    color: #a72872;
-    margin: 180px 0 30px;
-    font-size: 2.5rem;
-}
+        body {
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            color: var(--text-color);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
 
-/* ========= Commande Block ========= */
-.commande-block {
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
-    padding: 25px;
-    margin: 30px 20px;
-    transition: 0.3s;
-}
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            padding-top: 120px;
+        }
 
-.commande-block h2 {
-    font-size: 1.5rem;
-    color: #a72872;
-    margin-bottom: 15px;
-}
+        .page-header {
+            text-align: center;
+            margin-bottom: 50px;
+            position: relative;
+        }
 
-.commande-block p {
-    margin: 8px 0;
-    font-size: 1rem;
-}
+        .page-header h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 70px 0px 50px 0px ;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
 
-/* ========= Tables ========= */
-table {
-    width: 100%;
-    margin-top: 20px;
-    border-collapse: collapse;
-    overflow-x: auto;
-}
+        .page-header::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background: var(--gradient-primary);
+            border-radius: 2px;
+        }
 
-th, td {
-    padding: 12px;
-    border: 1px solid #f1d5e7;
-    text-align: center;
-}
+        .stats-card {
+            background: var(--card-background);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: var(--shadow-medium);
+            border: 1px solid var(--border-color);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
 
-th {
-    background-color:rgb(184, 26, 128);
-    color: #fff;
-    font-weight: bold;
-}
+        .stats-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+        }
 
-/* ========= Images ========= */
-img {
-    border-radius: 6px;
-    width: 70px;
-}
+        .stats-number {
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
 
-.img-thumbnail {
-    width: 100px;
-    height: auto;
-    cursor: pointer;
-}
+        .stats-label {
+            font-size: 1.2rem;
+            color: var(--light-text-color);
+            font-weight: 500;
+        }
 
-/* ========= Buttons ========= */
-.buttonn {
-    display: inline-block;
-    padding: 10px 20px;
-    background-color: rgba(241, 98, 186, 0.75);
-    color: black;
-    text-decoration: none;
-    border-radius: 6px;
-    border: none;
-    margin-top: 10px;
-    cursor: pointer;
-}
+        .history-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--gradient-primary);
+            color: white;
+            text-decoration: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-medium);
+            margin-bottom: 30px;
+        }
 
-.disabled-button {
-    background: rgba(81, 77, 79, 0.75);
-    color: white;
-    cursor: not-allowed;
-}
+        .history-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-heavy);
+            color: white;
+            text-decoration: none;
+        }
 
-.active-button {
-    background-color: rgba(241, 98, 186, 0.75);
-    color: black;
-}
+        .history-btn i {
+            font-size: 1.2rem;
+        }
 
-.btn {
-    display: inline-block;
-    padding: 10px 20px;
-    background-color:rgb(234, 8, 185); /* Bleu bootstrap */
-    border-radius: 5px;
-    border: none;
-    transition: background-color 0.3s ease;
-    margin-left: 80px;
-}
+        .commande-block {
+            background: var(--card-background);
+            border-radius: 20px;
+            box-shadow: var(--shadow-medium);
+            margin-bottom: 30px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+            position: relative;
+        }
 
-.btn:hover {
-    background-color:rgb(179, 0, 134); /* Bleu plus foncé */
-}
+        .commande-block:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-heavy);
+        }
 
-.btn a{
-    text-decoration: none;
-    color: white;
-     font-weight: bold;
-     font-size: 20px;
-}
+        .commande-header {
+            background: var(--gradient-secondary);
+            padding: 25px 30px;
+            border-bottom: 1px solid var(--border-color);
+        }
 
-/* ========= Status Tags ========= */
-.status {
-    font-weight: bold;
-    font-size: 0.95rem;
-    display: inline-block;
-}
+        .commande-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--secondary-color);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
 
-.status.en-attente {
-    color: gray;
-    animation: pulseText 1.5s infinite;
-}
+        .commande-title i {
+            font-size: 1.5rem;
+        }
 
-.status.en-preparation {
-    color: orange;
-    animation: pulseText 1.5s infinite;
-}
+        .commande-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
 
-.status.en-route {
-    color: #e19f04;
-    animation: pulseText 1.5s infinite;
-}
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-.status.en-retrait {
-    color: #44bbe0;
-    animation: pulseText 1.5s infinite;
-}
+        .info-item i {
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            width: 20px;
+        }
 
-.status.en-livree {
-    color: green;
-}
+        .info-item strong {
+            color: var(--text-color);
+            font-weight: 600;
+        }
 
-.status.unknown {
-    color: #999;
-}
+        .info-item span {
+            color: var(--light-text-color);
+        }
 
-@keyframes pulseText {
-    0% { opacity: 1; }
-    50% { opacity: 0.5; }
-    100% { opacity: 1; }
-}
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
 
-/* ========= Totals ========= */
-.total {
-    text-align: right;
-    font-weight: bold;
-    color: #a72872;
-    margin-top: 10px;
-}
+        .status-badge:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
 
-.total-general {
-    text-align: center;
-    font-size: 1.5rem;
-    font-weight: bold;
-    background-color:rgb(254, 251, 253);
-    border: 2px solid rgb(253, 208, 235);
-    border-radius: 8px;
-    color: #a72872;
-    padding: 15px;
-    margin: 40px 20px 80px 20px;
-    box-shadow: 0 3px 8px rgba(114, 19, 75, 0.35);
-}
+        .status-En-attente { 
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%); 
+            color: #856404; 
+            border: 1px solid #ffeaa7;
+        }
+        .status-Validée { 
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); 
+            color: #155724; 
+            border: 1px solid #c3e6cb;
+        }
+        .status-En-préparation { 
+            background: linear-gradient(135deg, #cce7ff 0%, #b3d9ff 100%); 
+            color: #004085; 
+            border: 1px solid #b3d9ff;
+        }
+        .status-Prête { 
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%); 
+            color: #6c5ce7; 
+            border: 1px solid #fdcb6e;
+        }
+        .status-Livrée { 
+            background: linear-gradient(135deg, #d1f2eb 0%, #b8e6e6 100%); 
+            color: #0c5460; 
+            border: 1px solid #b8e6e6;
+        }
+        .status-Annulée { 
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%); 
+            color: #721c24; 
+            border: 1px solid #f5c6cb;
+        }
 
-/* ========= No Data ========= */
-.no-data {
-    font-size: 1.8rem;
-    text-align: center;
-    margin: 200px auto;
-    color: #999;
-}
+        .commande-content {
+            padding: 30px;
+        }
 
-/* ========= Forms ========= */
-form {
-    width: 100%;
-    text-align: center;
-    margin-bottom: 50px;
-}
+        .table-container {
+            overflow-x: auto;
+            border-radius: 15px;
+            box-shadow: var(--shadow-light);
+        }
 
-form button {
-    width: 40%;
-    padding: 12px 20px;
-    margin-top: 40px;
-    background-color: rgb(251, 107, 189);
-    color: white;
-    font-size: 1rem;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-}
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--card-background);
+            border-radius: 15px;
+            overflow: hidden;
+        }
 
-/* ========= Modals ========= */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 999;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.9);
-    overflow: auto;
-    padding-top: 80px;
-}
+        th {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 20px 15px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: relative;
+        }
 
-.modal-content {
-    margin: auto;
-    display: block;
-    max-width: 90%;
-    width: 600px;
-}
+        th::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: rgba(255,255,255,0.3);
+        }
 
-.close {
-    position: absolute;
-    top: 30px;
-    right: 45px;
-    color: #f1f1f1;
-    font-size: 36px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.3s;
-}
+        td {
+            padding: 20px 15px;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
 
-.close:hover {
-    color: #bbb;
-}
+        tr {
+            transition: all 0.3s ease;
+        }
 
+        tr:hover {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            transform: scale(1.01);
+        }
 
+        .product-image {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 12px;
+            border: 2px solid var(--border-color);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
 
-/* ========= Responsive ========= */
-@media (max-width: 992px) {
-    h1 {
-        font-size: 2rem;
-        margin: 180px 0 30px;
-    }
+        .product-image:hover {
+            transform: scale(1.15) rotate(2deg);
+            box-shadow: 0 8px 25px rgba(219, 46, 139, 0.3);
+        }
 
-    .commande-block {
-        margin: 20px 10px;
-        padding: 20px;
-    }
+        .product-name {
+            font-weight: 600;
+            color: var(--text-color);
+        }
 
-    table {
-        font-size: 0.9rem;
-    }
+        .product-details {
+            color: var(--light-text-color);
+            font-size: 0.9rem;
+        }
 
-    th, td {
-        padding: 8px;
-    }
+        .price {
+            font-weight: 700;
+            color: var(--primary-color);
+            font-size: 1.1rem;
+            position: relative;
+            padding: 5px 10px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, rgba(219, 46, 139, 0.1) 0%, rgba(167, 40, 114, 0.1) 100%);
+        }
 
-    img, .img-thumbnail {
-        width: 60px;
-    }
-}
+        .total-amount {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--secondary-color);
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
 
-@media (max-width: 576px) {
-    h1 {
-        font-size: 1.5rem;
-        margin-top: 180px;
-    }
+        .total-label {
+            font-size: 1.2rem;
+            color: var(--light-text-color);
+            font-weight: 500;
+        }
 
-    .buttonn {
-        font-size: 0.9rem;
-        padding: 8px 12px;
-    }
+        .no-orders {
+            text-align: center;
+            padding: 80px 20px;
+            background: var(--card-background);
+            border-radius: 20px;
+            box-shadow: var(--shadow-medium);
+            margin: 50px 0;
+            position: relative;
+            overflow: hidden;
+        }
 
-    form button {
-        width: 80%;
-        font-size: 0.9rem;
-    }
+        .no-orders::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+        }
 
-    .modal-content {
-        width: 90%;
-    }
+        .no-orders i {
+            font-size: 4rem;
+            color: var(--accent-color);
+            margin-bottom: 20px;
+            animation: bounce 2s infinite;
+        }
 
-    table {
-        display: block;
-        overflow-x: auto;
-    }
+        .no-orders h3 {
+            font-size: 2rem;
+            color: var(--text-color);
+            margin-bottom: 20px;
+        }
 
-    th, td {
-        font-size: 0.75rem;
-        white-space: nowrap;
-    }
+        .no-orders p {
+            font-size: 1.1rem;
+            color: var(--light-text-color);
+            margin-bottom: 30px;
+        }
 
-    img, .img-thumbnail {
-        width: 50px;
-    }
-}
+        .cta-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--gradient-primary);
+            color: white;
+            text-decoration: none;
+            padding: 18px 35px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-medium);
+            position: relative;
+            overflow: hidden;
+        }
 
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .cta-button:hover::before {
+            left: 100%;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: var(--shadow-heavy);
+            color: white;
+            text-decoration: none;
+        }
+
+        .cta-button i {
+            font-size: 1.3rem;
+        }
+
+        .grand-total {
+            background: var(--gradient-primary);
+            color: white;
+            text-align: center;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: var(--shadow-heavy);
+            margin: 50px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .grand-total::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .grand-total h2 {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+        }
+
+        .grand-total .amount {
+            font-size: 3.5rem;
+            font-weight: 900;
+            position: relative;
+            z-index: 1;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .modal-content {
+            margin: 5% auto;
+            display: block;
+            max-width: 90%;
+            width: 800px;
+            border-radius: 20px;
+            box-shadow: var(--shadow-heavy);
+            animation: slideInUp 0.4s ease-out;
+        }
+
+        .close {
+            position: absolute;
+            top: 20px;
+            right: 35px;
+            color: #f1f1f1;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            z-index: 1001;
+            background: rgba(0,0,0,0.5);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close:hover {
+            color: var(--primary-color);
+            transform: rotate(90deg) scale(1.1);
+            background: rgba(255,255,255,0.9);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 15px;
+                padding-top: 100px;
+            }
+
+            .page-header h1 {
+                font-size: 2.5rem;
+            }
+
+            .commande-header {
+                padding: 20px;
+            }
+
+            .commande-title {
+                font-size: 1.5rem;
+            }
+
+            .commande-info {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .commande-content {
+                padding: 20px;
+            }
+
+            th, td {
+                padding: 12px 8px;
+                font-size: 0.85rem;
+            }
+
+            .product-image {
+                width: 60px;
+                height: 60px;
+            }
+
+            .total-amount {
+                font-size: 2rem;
+            }
+
+            .grand-total .amount {
+                font-size: 2.5rem;
+            }
+
+            .stats-number {
+                font-size: 2.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .page-header h1 {
+                font-size: 2rem;
+            }
+
+            .commande-block {
+                margin-bottom: 20px;
+            }
+
+            .commande-header {
+                padding: 15px;
+            }
+
+            .commande-content {
+                padding: 15px;
+            }
+
+            table {
+                font-size: 0.8rem;
+            }
+
+            th, td {
+                padding: 8px 5px;
+            }
+
+            .product-image {
+                width: 50px;
+                height: 50px;
+            }
+
+            .cta-button {
+                padding: 15px 25px;
+                font-size: 1rem;
+            }
+        }
+
+        /* Animation for status badges */
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        @keyframes slideInUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes bounce {
+            0%, 20%, 53%, 80%, 100% {
+                transform: translate3d(0,0,0);
+            }
+            40%, 43% {
+                transform: translate3d(0, -8px, 0);
+            }
+            70% {
+                transform: translate3d(0, -4px, 0);
+            }
+            90% {
+                transform: translate3d(0, -2px, 0);
+            }
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .status-badge {
+            animation: pulse 2s infinite;
+        }
+
+        .commande-block {
+            animation: slideInUp 0.6s ease-out;
+        }
+
+        .stats-card {
+            animation: bounce 1s ease-out;
+        }
+
+        .page-header h1 {
+            animation: fadeIn 1s ease-out;
+        }
+
+        /* Enhanced hover effects */
+        .commande-block:hover .commande-title {
+            transform: scale(1.02);
+            transition: transform 0.3s ease;
+        }
+
+        .product-image:hover {
+            transform: scale(1.15) rotate(2deg);
+            box-shadow: 0 8px 25px rgba(219, 46, 139, 0.3);
+        }
+
+        /* Enhanced table styling */
+        tr {
+            transition: all 0.3s ease;
+        }
+
+        tr:hover {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            transform: scale(1.01);
+        }
+
+        /* Enhanced price styling */
+        .price {
+            font-weight: 700;
+            color: var(--primary-color);
+            font-size: 1.1rem;
+            position: relative;
+            padding: 5px 10px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, rgba(219, 46, 139, 0.1) 0%, rgba(167, 40, 114, 0.1) 100%);
+        }
+
+        /* Enhanced grand total */
+        .grand-total {
+            background: var(--gradient-primary);
+            color: white;
+            text-align: center;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: var(--shadow-heavy);
+            margin: 50px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .grand-total::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+
+        .grand-total h2 {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+        }
+
+        .grand-total .amount {
+            font-size: 3.5rem;
+            font-weight: 900;
+            position: relative;
+            z-index: 1;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        /* Enhanced no orders section */
+        .no-orders i {
+            animation: bounce 2s infinite;
+        }
+
+        /* Enhanced CTA button */
+        .cta-button {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .cta-button:hover::before {
+            left: 100%;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px) scale(1.05);
+        }
+
+        /* Enhanced modal */
+        .modal {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .modal-content {
+            animation: slideInUp 0.4s ease-out;
+        }
+
+        .close {
+            background: rgba(0,0,0,0.5);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close:hover {
+            transform: rotate(90deg) scale(1.1);
+            background: rgba(255,255,255,0.9);
+        }
     </style>
 </head>
 <body>
 <?php include 'menu.php'; ?>
+
 <div class="main-content">
+    <div class="page-header">
+        <h1><i class="fas fa-shopping-bag"></i> Mes Commandes</h1>
+    </div>
 
-<h1>Mes commandes</h1>
+    <div style="text-align: center; margin-bottom: 30px;">
+        <a href="historique" class="history-btn">
+            <i class="fas fa-history"></i>
+            Voir l'historique
+        </a>
+    </div>
 
-        <button class="btn"><a href="historique" >Historique</a></button>
-        
+    <?php if (count($commandes) > 0): ?>
+        <div class="stats-card">
+            <div class="stats-number"><?= count($commandes) ?></div>
+            <div class="stats-label">Commandes en cours</div>
+        </div>
 
-<?php
-echo "<br><strong>Nombre commande :</strong>". count($commandes) . "<br>";
-$total_general = 0;
-if (count($commandes) > 0):
-
-    foreach ($commandes as $id => $data): ?>
-        
-
-        
+        <?php 
+        $total_general = 0;
+        foreach ($commandes as $id => $data): 
+            $sous_total = $data['quantite'] * $data['prix'];
+            $total_general += $sous_total;
+        ?>
             <div class="commande-block">
-                <h2>Commande #<?= htmlspecialchars($data['id_commande']) ?></h2>
-                <p><strong>Mode de paiement :</strong> <?= ($data['mode_paiement']) ?></p>
-                <p><strong>Date de la commande :</strong> <?= ($data['date_commande']) ?></p>
-                
-    <p><strong>Statut commande :</strong>
-       <?= ($data['statut']) ?>
-</p>
+                <div class="commande-header">
+                    <div class="commande-title">
+                        <i class="fas fa-receipt"></i>
+                        Commande #<?= htmlspecialchars($data['id_commande']) ?>
+                    </div>
+                    <div class="commande-info">
+                        <div class="info-item">
+                            <i class="fas fa-credit-card"></i>
+                            <strong>Paiement:</strong> <span><?= htmlspecialchars($data['mode_paiement']) ?></span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-calendar-alt"></i>
+                            <strong>Date:</strong> <span><?= htmlspecialchars($data['date_commande']) ?></span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Statut:</strong> 
+                            <span class="status-badge status-<?= str_replace(' ', '-', htmlspecialchars($data['statut'])) ?>">
+                                <?= htmlspecialchars($data['statut']) ?>
+                            </span>
+                        </div>
+                    </div>
+                </div>
 
+                <div class="commande-content">
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Image</th>
+                                    <th>Modèle</th>
+                                    <th>Tissu</th>
+                                    <th>Quantité</th>
+                                    <th>Taille</th>
+                                    <th>Personnalisation</th>
+                                    <th>Prix unitaire</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php 
+                                $tissu = !empty($data['tissu']) ? $data['tissu'] : 'aucun.png';
+                                ?>
+                                <tr>
+                                    <td>
+                                        <img src="uploads/<?= htmlspecialchars($data['image']) ?>" 
+                                             class="product-image" 
+                                             alt="<?= htmlspecialchars($data['nom_modele']) ?>">
+                                    </td>
+                                    <td>
+                                        <div class="product-name"><?= htmlspecialchars($data['nom_modele']) ?></div>
+                                    </td>
+                                    <td>
+                                        <img src="uploads/<?= $tissu ?>" 
+                                             class="product-image" 
+                                             alt="Tissu">
+                                    </td>
+                                    <td>
+                                        <div class="product-details"><?= htmlspecialchars($data['quantite']) ?></div>
+                                    </td>
+                                    <td>
+                                        <div class="product-details"><?= htmlspecialchars($data['taille_standard']) ?></div>
+                                    </td>
+                                    <td>
+                                        <div class="product-details">
+                                            <?= !empty($data['description_modele']) ? htmlspecialchars($data['description_modele']) : "Aucune" ?>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="price"><?= number_format($data['prix'], 0, ',', ' ') ?> FCFA</div>
+                                    </td>
+                                    <td>
+                                        <div class="price"><?= number_format($sous_total, 0, ',', ' ') ?> FCFA</div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Image</th>
-                            <th>Modèle</th>
-                            <th>Type tissu</th>
-                            <th>Quantité</th>
-                            <th>Taille</th>
-                            <th>Personnalisation</th>
-                            <th>Prix unitaire</th>
-                            <th>Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php $total_commande = 0; ?>
-                            <?php $sous_total = $data['quantite'] * $data['prix']; ?>
-                            <?php $total_commande += $sous_total;
-                            $tissu = !empty($data['tissu']) ? $data['tissu'] : 'aucun.png';
-                            ?>
-                            
-                            <tr>
-                                <td><img src="uploads/<?= htmlspecialchars($data['image']) ?>" class="img-thumbnail"></td>
-                                <td><?= htmlspecialchars($data['nom_modele']) ?></td>
-                                <td><img src="uploads/<?= $tissu ?>" class="img-thumbnail"></td>
-                                <td><?= ($data['quantite']) ?></td>
-                                <td><?= ($data['taille_standard']) ?></td>
-                                <td><?=  (!empty($row['description_modele']) ? $row['description_modele'] : "Aucune")  ?></td>
-                                <td><?= ($data['prix']) ?> FCFA</td>
-                                <td><?= ($sous_total) ?> FCFA</td>
-                            </tr>
-                    </tbody>
-                </table>
-
-                <!--p><strong>Total commande :</strong> <!?= number_format($total_commande, 0, ',', ' ') ?> FCFA</-p-->
-                
-                <?php $total_general += $total_commande; ?>
-
-           
-
+               
             </div>
         <?php endforeach; ?>
 
-    <div class="total-general">
-        Montant total général : <?= number_format($total_general, 0, ',', ' ') ?> FCFA
-    </div>
+        <div class="grand-total">
+            <h2><i class="fas fa-calculator"></i> Montant Total Général</h2>
+            <div class="amount"><?= number_format($total_general, 0, ',', ' ') ?> FCFA</div>
+        </div>
 
-<?php else: ?>
-    <div class="no-data">Aucune commande trouvée.</div>
-    <form style="text-align:center;">
-        <button type="button" onclick="window.location.href='catalogue.php'" style="padding: 10px 20px; margin:50px; background-color:rgb(251, 107, 189); border: none; border-radius: 5px; color: white; font-size: 16px; cursor: pointer;">
-            Passer une commande
-        </button>
-    </form>
-<?php endif; ?>
-
+    <?php else: ?>
+        <div class="no-orders">
+            <i class="fas fa-shopping-cart"></i>
+            <h3>Aucune commande trouvée</h3>
+            <p>Vous n'avez pas encore de commandes en cours. Découvrez notre collection et passez votre première commande !</p>
+            <a href="catalogue.php" class="cta-button">
+                <i class="fas fa-plus"></i>
+                Passer une commande
+            </a>
+        </div>
+    <?php endif; ?>
 </div>
 
-
-<!-- La modale -->
+<!-- Modal pour les images -->
 <div id="myModal" class="modal">
-  <span class="close">&times;</span>
-  <img class="modal-content" id="img01">
+    <span class="close">&times;</span>
+    <img class="modal-content" id="img01">
 </div>
 
 <script>
-  // Obtenez la modal
+// Modal functionality
 var modal = document.getElementById("myModal");
-
-// Obtenez le conteneur d'image modale
 var modalImg = document.getElementById("img01");
 
-// Trouver toutes les images avec la classe 'img-thumbnail'
-document.querySelectorAll(".img-thumbnail").forEach(function(img) {
+document.querySelectorAll(".product-image").forEach(function(img) {
     img.onclick = function() {
         modal.style.display = "block";
-        modalImg.src = this.src; // Charger l'image dans la modale
+        modalImg.src = this.src;
     };
 });
 
-// Quand l'utilisateur clique sur le bouton de fermeture, fermez la modale
 var span = document.getElementsByClassName("close")[0];
 span.onclick = function() {
     modal.style.display = "none";
 };
 
-const animatedStatuses = document.querySelectorAll('.status[data-base]');
+window.onclick = function(event) {
+    if (event.target == modal) {
+        modal.style.display = "none";
+    }
+};
 
-animatedStatuses.forEach(el => {
-    const baseText = el.dataset.base;
-    let dots = 0;
-
-    setInterval(() => {
-        dots = (dots + 1) % 4;
-        el.textContent = baseText + '.'.repeat(dots);
-    }, 600);
+// Smooth scroll animation
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        document.querySelector(this.getAttribute('href')).scrollIntoView({
+            behavior: 'smooth'
+        });
+    });
 });
 
+// Add loading animation to images
+document.querySelectorAll('.product-image').forEach(img => {
+    img.addEventListener('load', function() {
+        this.classList.remove('loading');
+    });
+    img.classList.add('loading');
+});
 </script>
 
-
 <?php include 'footer.php'; ?>
-
 </body>
 </html>
 

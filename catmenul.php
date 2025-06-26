@@ -184,7 +184,7 @@
     <ul>
       <a href="" class="active"><li>Tableau de bord livreur</li><a>
       
-      <a href="profil.php"><li>Mon profil</li></a>
+      <a href="profil_livreur.php"><li>Mon profil</li></a>
       <a href="dashboard_livreur.php"><li>Commandes</li></a>
     </ul>
 

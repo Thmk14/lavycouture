@@ -184,7 +184,7 @@
     <ul>
       <a href="dashboard_couturier.php" class="active"><li>Tableau de bord Couturier</li></a>
       
-      <a href="profil.php"><li>Mon profil</li></a>
+      <a href="profil_couturier.php"><li>Mon profil</li></a>
       <a href="liste_couturier_commande.php"><li>Commandes</li></a>
       <a href="client_atelier.php"><li>Nos clients</li></a>
       <a href="listcreate.php"><li>Créations des clients</li></a>

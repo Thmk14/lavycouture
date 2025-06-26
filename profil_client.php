@@ -4,11 +4,11 @@ if (session_status() == PHP_SESSION_NONE) {
 }
 require 'config.php';
 
-$id_personnel = $_SESSION['id_personnel'];
+$id = $_SESSION['id'];
 
-$requete = "SELECT * FROM personnel WHERE id_personnel = ?";
+$requete = "SELECT * FROM client WHERE id_client = ?";
 $stmt = $pdo->prepare($requete);
-$stmt->execute([$id_personnel]);
+$stmt->execute([$id]);
 $profil = $stmt->fetch(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
@@ -16,7 +16,7 @@ $profil = $stmt->fetch(PDO::FETCH_ASSOC);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mon Profil - Lavit Couture</title>
+    <title>Mon Profil - Lavy Couture</title>
     <style>
         * {
             box-sizing: border-box;
@@ -146,6 +146,11 @@ $profil = $stmt->fetch(PDO::FETCH_ASSOC);
         <label>Nom :</label> <span><?= htmlspecialchars($profil['nom']) ?></span>
     </div>
 
+     <div class="profil-item">
+        <label>Prenom :</label> <span><?= htmlspecialchars($profil['prenom']) ?></span>
+    </div>
+
+
     <div class="profil-item">
         <label>Email :</label> <span><?= htmlspecialchars($profil['email']) ?></span>
     </div>
@@ -154,9 +159,7 @@ $profil = $stmt->fetch(PDO::FETCH_ASSOC);
         <label>Téléphone :</label> <span><?= htmlspecialchars($profil['telephone']) ?></span>
     </div>
 
-    <div class="profil-item">
-        <label>Fonction :</label> <span><?= htmlspecialchars(ucfirst($profil['fonction'])) ?></span>
-    </div>
+  
 
     <a href="modifier_profil_personnel.php" class="btn-modifier">Modifier mon profil</a>
 </div>

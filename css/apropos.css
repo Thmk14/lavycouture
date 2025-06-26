@@ -21,16 +21,14 @@
     }
 
     .left h3 {
-      font-size: 2.5rem;
+      font-size: 4rem;
       color: #d30f8a;
       margin-bottom: 1.5rem;
-      font-family: papyrus, sans-serif;
     }
 
     .left h3 span {
       color: #111;
       
-      font-family: papyrus, sans-serif;
     }
 
     .left p {
